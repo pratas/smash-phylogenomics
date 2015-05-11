@@ -29,44 +29,7 @@ typedef int64_t  I64;
 typedef int32_t  I32;
 typedef int16_t  I16;
 typedef int8_t   I8;
-/*
-typedef struct{
-  U32    ctx;
-  U32    den;
-  U32    ir;
-  U32    edits;
-  U32    eDen;
-//  CModel *CM;
-  }
-ModelPar;
 
-typedef struct{
-  U8       help;
-  U8       verbose;
-  U8       force;
-  U8       estim;
-  U8       level;
-  U32      col;
-  double   gamma;
-  U32      nModels;
-  U32      nThreads;
-  U8       nFiles;
-  U64      *size;
-  char     **files;
-  double   **matrix;
-  }
-Parameters;
-
-typedef struct{
-  uint32_t id;
-  uint32_t ref;
-  uint32_t tar;
-  ModelPar *model;
-  }
-Threads;
-
-Parameters *P;
-*/
 U32 garbage;
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
