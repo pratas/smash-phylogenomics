@@ -530,9 +530,11 @@ uint8_t CmpCheckSum(uint32_t cs, uint32_t checksum)
 void PrintArgs(Parameters *P){
   uint32_t n;
 
+  fprintf(stderr, "Verbose mode ....................... %s\n", P->verbose == 0 
+  ? "no" : "yes");
   fprintf(stderr, "Force mode ......................... %s\n", P->force == 0 ? 
   "no" : "yes");
-
+  fprintf(stderr, "Compression level .................. %u\n", P->level);
   for(n = 0 ; n < P->nModels ; ++n){
     fprintf(stderr, "Reference model %d:\n", n+1);
     fprintf(stderr, "  [+] Context order ................ %u\n", 
