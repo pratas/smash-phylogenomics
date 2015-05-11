@@ -15,7 +15,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - C O M P R E S S O R - - - - - - - - - - - - - -
-
+/*
 void Compress(Parameters *P, CModel **cModels, uint8_t id, uint32_t 
 refNModels, INF *I){
   FILE        *Reader  = Fopen(P->tar[id], "r");
@@ -220,14 +220,14 @@ refNModels, INF *I){
   I[id].bytes = 2222222;
   I[id].size  = compressed;
   }
-
+*/
 
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - - - R E F E R E N C E - - - - - - - - - - - - -
 
-CModel **LoadReference(Parameters *P)
+CModel **LoadReference(Parameters *P, uint32_t ref)
   {
-  FILE      *Reader = Fopen(P->ref, "r");
+  FILE      *Reader = Fopen(P->files[ref], "r");
   uint32_t  n, k, idxPos;
   uint64_t  nBases = 0;
   int32_t   idx = 0;
@@ -242,13 +242,12 @@ CModel **LoadReference(Parameters *P)
     fprintf(stdout, "Building reference model ...\n");
 
   readerBuffer  = (uint8_t *) Calloc(BUFFER_SIZE + 1, sizeof(uint8_t));
-  symbolBuffer  = (uint8_t *) Calloc(BUFFER_SIZE + BGUARD+1, sizeof(uint8_t));
+  symbolBuffer  = (uint8_t *) Calloc(BUFFER_SIZE + BGUARD + 1, sizeof(uint8_t));
   symbolBuffer += BGUARD;
   cModels       = (CModel **) Malloc(P->nModels * sizeof(CModel *)); 
   for(n = 0 ; n < P->nModels ; ++n)
-    if(P->model[n].type == REFERENCE)
-      cModels[n] = CreateCModel(P->model[n].ctx, P->model[n].den, 
-      P->model[n].ir, REFERENCE, P->col, P->model[n].edits, P->model[n].eDen);
+    cModels[n] = CreateCModel(P->model[n].ctx, P->model[n].den, 
+    P->model[n].ir, REFERENCE, P->col, P->model[n].edits, P->model[n].eDen);
 
   sym = fgetc(Reader);
   switch(sym){ 
@@ -264,7 +263,6 @@ CModel **LoadReference(Parameters *P)
     default: nBases = NDNASyminFile (Reader); break;
     }
 
-  P->checksum = 0;
   while((k = fread(readerBuffer, 1, BUFFER_SIZE, Reader)))
     for(idxPos = 0 ; idxPos < k ; ++idxPos){
 
@@ -290,17 +288,15 @@ CModel **LoadReference(Parameters *P)
         continue;
 
       symbolBuffer[idx] = sym = DNASymToNum(sym);
-      P->checksum = (P->checksum + (uint8_t) sym);
 
-      for(n = 0 ; n < P->nModels ; ++n)
-        if(P->model[n].type == REFERENCE){
-          GetPModelIdx(symbolBuffer+idx-1, cModels[n]);
-          UpdateCModelCounter(cModels[n], sym, cModels[n]->pModelIdx);
-          if(cModels[n]->ir == 1){                         // Inverted repeats
-            irSym = GetPModelIdxIR(symbolBuffer+idx, cModels[n]);
-            UpdateCModelCounter(cModels[n], irSym, cModels[n]->pModelIdxIR);
-            }
+      for(n = 0 ; n < P->nModels ; ++n){
+        GetPModelIdx(symbolBuffer+idx-1, cModels[n]);
+        UpdateCModelCounter(cModels[n], sym, cModels[n]->pModelIdx);
+        if(cModels[n]->ir == 1){                         // Inverted repeats
+          irSym = GetPModelIdxIR(symbolBuffer+idx, cModels[n]);
+          UpdateCModelCounter(cModels[n], irSym, cModels[n]->pModelIdxIR);
           }
+        }
 
       if(++idx == BUFFER_SIZE){
         memcpy(symbolBuffer - BGUARD, symbolBuffer + idx - BGUARD, BGUARD);
@@ -311,10 +307,8 @@ CModel **LoadReference(Parameters *P)
       #endif
       }
  
-  P->checksum %= CHECKSUMGF; 
   for(n = 0 ; n < P->nModels ; ++n)
-    if(P->model[n].type == REFERENCE)
-      ResetCModelIdx(cModels[n]);
+    ResetCModelIdx(cModels[n]);
   Free(readerBuffer);
   Free(symbolBuffer-BGUARD);
   fclose(Reader);
@@ -338,7 +332,7 @@ int32_t main(int argc, char *argv[]){
   uint32_t    n, k, refNModels, col;
   uint64_t    totalBytes, totalSize;
 
-  clock_t     stop = 0, start = clock();
+  clock_t     start = clock();
   CModel      **refModels;
   double      gamma;
   
@@ -385,9 +379,8 @@ int32_t main(int argc, char *argv[]){
     return EXIT_FAILURE;
     }
 
-  P->model = (ModelPar *) Calloc(P->nModels, sizeof(ModelPar));
-
   // READ MODEL PARAMETERS FROM XARGS & ARGS
+  P->model = (ModelPar *) Calloc(P->nModels, sizeof(ModelPar));
   k = 0;
   for(n = 1 ; n < argc ; ++n)
     if(strcmp(argv[n], "-m") == 0)
@@ -416,19 +409,18 @@ int32_t main(int argc, char *argv[]){
   if(P->verbose) PrintArgs(P);
 
   refModels = (CModel **) Malloc(P->nModels * sizeof(CModel *));
-  refModels = LoadReference(P);
+  refModels = LoadReference(P, 0);
 
   for(n = 0 ; n < P->nFiles ; ++n){
     //Compress(P, refModels, n, refNModels, I);
     }
 
-  if(P->nTar > 1)
-    for(n = 0 ; n < P->nTar ; ++n){
-      fprintf(stdout, "File %d compressed bytes: %"PRIu64" (", n+1, (uint64_t) 444);
-      PrintHRBytes(I[n].bytes);
-      fprintf(stdout, ") , Normalized Dissimilarity Rate: %.6g\n", 
-      (8.0*444)/(2*333));
-      }
+  for(n = 0 ; n < P->nFiles ; ++n){
+    fprintf(stdout, "File %d compressed bytes: %"PRIu64" (", n+1, (uint64_t) 444);
+    PrintHRBytes(444);
+    fprintf(stdout, ") , Normalized Dissimilarity Rate: %.6g\n", 
+    (8.0*444)/(2*333));
+    }
 
   fprintf(stdout, "Spent %g sec.\n", ((double) (clock() - start)) /
   CLOCKS_PER_SEC);

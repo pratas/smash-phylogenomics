@@ -36,7 +36,6 @@ typedef struct{
   U32 ir;
   U32 edits;
   U32 eDen;
-  U8  type;
   }
 ModelPar;
 

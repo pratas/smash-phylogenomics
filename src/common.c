@@ -407,7 +407,6 @@ ModelPar ArgsUniqModel(char *str, uint8_t type)
     Mp.ir    = ir;
     Mp.edits = edits;
     Mp.eDen  = eDen;
-    Mp.type  = type;
     return Mp;
     }
   else{
@@ -528,55 +527,33 @@ uint8_t CmpCheckSum(uint32_t cs, uint32_t checksum)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-void PrintArgs(Parameters *P)
-  {
+void PrintArgs(Parameters *P){
   uint32_t n;
 
   fprintf(stderr, "Force mode ......................... %s\n", P->force == 0 ? 
   "no" : "yes");
 
-  for(n = 0 ; n < P->nModels ; ++n)
-    if(P->model[n].type == 1)
-      {
-      fprintf(stderr, "Reference model %d:\n", n+1);
-      fprintf(stderr, "  [+] Context order ................ %u\n", 
-      P->model[n].ctx);
-      fprintf(stderr, "  [+] Alpha denominator ............ %u\n", 
-      P->model[n].den);
-      fprintf(stderr, "  [+] Inverted repeats ............. %s\n", 
-      P->model[n].ir == 0 ? "no" : "yes");
-      fprintf(stderr, "  [+] Allowable substitutions ...... %u\n",
-      P->model[n].edits);
-      if(P->model[n].edits != 0)
-        fprintf(stderr, "  [+] Substitutions alpha den ...... %u\n",
-        P->model[n].eDen);
+  for(n = 0 ; n < P->nModels ; ++n){
+    fprintf(stderr, "Reference model %d:\n", n+1);
+    fprintf(stderr, "  [+] Context order ................ %u\n", 
+    P->model[n].ctx);
+    fprintf(stderr, "  [+] Alpha denominator ............ %u\n", 
+    P->model[n].den);
+    fprintf(stderr, "  [+] Inverted repeats ............. %s\n", 
+    P->model[n].ir == 0 ? "no" : "yes");
+    fprintf(stderr, "  [+] Allowable substitutions ...... %u\n",
+    P->model[n].edits);
+    if(P->model[n].edits != 0)
+      fprintf(stderr, "  [+] Substitutions alpha den ...... %u\n",
+      P->model[n].eDen);
     }
-
-  for(n = 0 ; n < P->nModels ; ++n)
-    if(P->model[n].type == 0)
-      {
-      fprintf(stderr, "Target model %d:\n", n+1);
-      fprintf(stderr, "  [+] Context order ................ %u\n",
-      P->model[n].ctx);
-      fprintf(stderr, "  [+] Alpha denominator ............ %u\n",
-      P->model[n].den);
-      fprintf(stderr, "  [+] Inverted repeats ............. %s\n",
-      P->model[n].ir == 0 ? "no" : "yes");
-      fprintf(stderr, "  [+] Allowable substitutions ...... %u\n",
-      P->model[n].edits);
-      if(P->model[n].edits != 0)
-        fprintf(stderr, "  [+] Substitutions alpha den ...... %u\n",
-        P->model[n].eDen);
-      }
 
   fprintf(stderr, "Gamma .............................. %.2lf\n", P->gamma);
   fprintf(stderr, "Maximum Collisions ................. %u\n", P->col);
-  if(P->ref != NULL)
-    fprintf(stderr, "Reference filename ................. %s\n", P->ref);
-  fprintf(stderr, "Target files (%u):\n", P->nTar);
-  for(n = 0 ; n < P->nTar ; ++n)
+  fprintf(stderr, "Files (%u):\n", P->nFiles);
+  for(n = 0 ; n < P->nFiles ; ++n)
     fprintf(stderr, "  [+] Filename %-2u .................. %s\n", n + 1, 
-    P->tar[n]);
+    P->files[n]);
   }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
