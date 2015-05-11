@@ -221,7 +221,7 @@ refNModels, INF *I){
   I[id].size  = compressed;
   }
 */
-
+/*
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - - - R E F E R E N C E - - - - - - - - - - - - -
 
@@ -320,7 +320,7 @@ CModel **LoadReference(Parameters *P, uint32_t ref)
 
   return cModels;
   }
-  
+  */
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - M A I N - - - - - - - - - - - - - - - - -
@@ -329,15 +329,12 @@ CModel **LoadReference(Parameters *P, uint32_t ref)
 int32_t main(int argc, char *argv[]){
   char        **p = *&argv, **xargv, *xpl = NULL;
   int32_t     xargc = 0;
-  uint32_t    n, k, refNModels, col;
-  uint64_t    totalBytes, totalSize;
-
+  uint32_t    n, k, col, ref, tar, thread;
   clock_t     start = clock();
-  CModel      **refModels;
+  //CModel      **refModels;
   double      gamma;
+  Threads     *T;
   
-  Parameters  *P;
-
   P = (Parameters *) Malloc(1 * sizeof(Parameters));
   if((P->help = ArgsState(DEFAULT_HELP, p, argc, "-h")) == 1 || argc < 2){
     PrintMenu();
@@ -357,6 +354,7 @@ int32_t main(int argc, char *argv[]){
   P->verbose  = ArgsState  (DEFAULT_VERBOSE, p, argc, "-v" );
   P->force    = ArgsState  (DEFAULT_FORCE,   p, argc, "-f" );
   P->level    = ArgsNum    (0, p, argc, "-l", MIN_LEVEL, MAX_LEVEL);
+  P->nThreads = ArgsNum    (DEFAULT_THREADS, p, argc, "-t", MIN_THREADS, MAX_THREADS);
 
   P->nModels  = 0;
   for(n = 1 ; n < argc ; ++n)
@@ -380,15 +378,18 @@ int32_t main(int argc, char *argv[]){
     }
 
   // READ MODEL PARAMETERS FROM XARGS & ARGS
-  P->model = (ModelPar *) Calloc(P->nModels, sizeof(ModelPar));
-  k = 0;
-  for(n = 1 ; n < argc ; ++n)
-    if(strcmp(argv[n], "-m") == 0)
-      P->model[k++] = ArgsUniqModel(argv[n+1], 0);
-  if(P->level != 0){
-    for(n = 1 ; n < xargc ; ++n)
-      if(strcmp(xargv[n], "-m") == 0)
-        P->model[k++] = ArgsUniqModel(xargv[n+1], 0);
+  T = (Threads *) Calloc(P->nThreads, sizeof(Threads));
+  for(thread = 0 ; thread < P->nThreads ; ++thread){
+    T[thread].model = (ModelPar *) Calloc(P->nModels, sizeof(ModelPar));
+    k = 0;
+    for(n = 1 ; n < argc ; ++n)
+      if(strcmp(argv[n], "-m") == 0)
+        T[thread].model[k++] = ArgsUniqModel(argv[n+1], 0);
+    if(P->level != 0){
+      for(n = 1 ; n < xargc ; ++n)
+        if(strcmp(xargv[n], "-m") == 0)
+          T[thread].model[k++] = ArgsUniqModel(xargv[n+1], 0);
+      }
     }
 
   gamma = DEFAULT_GAMMA;
@@ -406,15 +407,26 @@ int32_t main(int argc, char *argv[]){
   P->gamma    = ((int)(P->gamma * 65536)) / 65536.0;
   P->nFiles   = ReadFNames (P, argv[argc-1]);
 
-  if(P->verbose) PrintArgs(P);
+  if(P->verbose) PrintArgs(P, &T[0]);
 
-  refModels = (CModel **) Malloc(P->nModels * sizeof(CModel *));
-  refModels = LoadReference(P, 0);
+  P->size   = (uint64_t *) Calloc(P->nFiles, sizeof(uint64_t));
+  P->matrix = (double  **) Calloc(P->nFiles, sizeof(double *));
+  for(n = 0 ; n < P->nFiles ; ++n)
+    P->matrix[n] = (double *) Calloc(P->nFiles, sizeof(double));
 
-  for(n = 0 ; n < P->nFiles ; ++n){
-    //Compress(P, refModels, n, refNModels, I);
+  //refModels = (CModel **) Malloc(P->nModels * sizeof(CModel *));
+
+  
+
+  for(ref = 0 ; ref < P->nFiles ; ++ref){
+    //refModels = LoadReference(P, ref);
+
+    for(tar = 0 ; tar < P->nFiles ; ++tar){
+      //Compress(P, refModels, n, refNModels, I);
+      }
+
     }
-
+  
   for(n = 0 ; n < P->nFiles ; ++n){
     fprintf(stdout, "File %d compressed bytes: %"PRIu64" (", n+1, (uint64_t) 444);
     PrintHRBytes(444);

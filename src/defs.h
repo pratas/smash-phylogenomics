@@ -31,11 +31,12 @@ typedef int16_t  I16;
 typedef int8_t   I8;
 
 typedef struct{
-  U32 ctx;
-  U32 den;
-  U32 ir;
-  U32 edits;
-  U32 eDen;
+  U32    ctx;
+  U32    den;
+  U32    ir;
+  U32    edits;
+  U32    eDen;
+//  CModel *CM;
   }
 ModelPar;
 
@@ -48,13 +49,23 @@ typedef struct{
   U32      col;
   double   gamma;
   U32      nModels;
-  ModelPar *model;
+  U32      nThreads;
   U8       nFiles;
+  U64      *size;
   char     **files;
-  U64      **size;
   double   **matrix;
   }
 Parameters;
+
+typedef struct{
+  uint32_t id;
+  uint32_t ref;
+  uint32_t tar;
+  ModelPar *model;
+  }
+Threads;
+
+Parameters *P;
 
 U32 garbage;
 
@@ -75,6 +86,9 @@ U32 garbage;
 #define DEFAULT_LEVEL          5
 #define MAX_LEVEL              10
 #define MIN_LEVEL              1
+#define DEFAULT_THREADS        1
+#define MIN_THREADS            1
+#define MAX_THREADS            500
 #define MAX_CTX                31
 #define MIN_CTX                1
 #define MAX_DEN                1000000

@@ -527,7 +527,7 @@ uint8_t CmpCheckSum(uint32_t cs, uint32_t checksum)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-void PrintArgs(Parameters *P){
+void PrintArgs(Parameters *P, Threads *T){
   uint32_t n;
 
   fprintf(stderr, "Verbose mode ....................... %s\n", P->verbose == 0 
@@ -538,18 +538,17 @@ void PrintArgs(Parameters *P){
   for(n = 0 ; n < P->nModels ; ++n){
     fprintf(stderr, "Reference model %d:\n", n+1);
     fprintf(stderr, "  [+] Context order ................ %u\n", 
-    P->model[n].ctx);
+    T->model[n].ctx);
     fprintf(stderr, "  [+] Alpha denominator ............ %u\n", 
-    P->model[n].den);
+    T->model[n].den);
     fprintf(stderr, "  [+] Inverted repeats ............. %s\n", 
-    P->model[n].ir == 0 ? "no" : "yes");
+    T->model[n].ir == 0 ? "no" : "yes");
     fprintf(stderr, "  [+] Allowable substitutions ...... %u\n",
-    P->model[n].edits);
-    if(P->model[n].edits != 0)
+    T->model[n].edits);
+    if(T->model[n].edits != 0)
       fprintf(stderr, "  [+] Substitutions alpha den ...... %u\n",
-      P->model[n].eDen);
+      T->model[n].eDen);
     }
-
   fprintf(stderr, "Gamma .............................. %.2lf\n", P->gamma);
   fprintf(stderr, "Maximum Collisions ................. %u\n", P->col);
   fprintf(stderr, "Files (%u):\n", P->nFiles);
