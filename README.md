@@ -1,3 +1,3 @@
-# SMASH-phylogenomics
+# smash-phylog
 
-Currently being developed
+Currently being developed...
