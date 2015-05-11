@@ -334,15 +334,15 @@ CModel **LoadReference(Parameters *P)
 
 int32_t main(int argc, char *argv[]){
   char        **p = *&argv, **xargv, *xpl = NULL;
-  CModel      **refModels;
   int32_t     xargc = 0;
   uint32_t    n, k, refNModels, col;
   uint64_t    totalBytes, totalSize;
+
   clock_t     stop = 0, start = clock();
+  CModel      **refModels;
   double      gamma;
   
   Parameters  *P;
-  INF         *I;
 
   P = (Parameters *) Malloc(1 * sizeof(Parameters));
   if((P->help = ArgsState(DEFAULT_HELP, p, argc, "-h")) == 1 || argc < 2){
@@ -382,11 +382,13 @@ int32_t main(int argc, char *argv[]){
 
   if(P->nModels == 0){
     fprintf(stderr, "Error: at least you need to use a context model!\n");
-    return 1;
+    return EXIT_FAILURE;
     }
 
   P->model = (ModelPar *) Calloc(P->nModels, sizeof(ModelPar));
 
+  // READ MODEL PARAMETERS FROM XARGS & ARGS
+  k = 0;
   for(n = 1 ; n < argc ; ++n)
     if(strcmp(argv[n], "-m") == 0)
       P->model[k++] = ArgsUniqModel(argv[n+1], 0);
@@ -409,50 +411,27 @@ int32_t main(int argc, char *argv[]){
   P->col      = ArgsNum    (col,   p, argc, "-c", 1, 200);
   P->gamma    = ArgsDouble (gamma, p, argc, "-g");
   P->gamma    = ((int)(P->gamma * 65536)) / 65536.0;
-  P->ref      = ArgsString (NULL, p, argc, "-r");
-  P->nTar     = ReadFNames (P, argv[argc-1]);
-  P->checksum = 0;
-  if(P->verbose) 
-    PrintArgs(P);
+  P->nFiles   = ReadFNames (P, argv[argc-1]);
 
-  if(refNModels == 0)
-    refModels = (CModel **) Malloc(P->nModels * sizeof(CModel *));
-  else{
-    if(P->ref == NULL){
-      fprintf(stderr, "Error: using reference model(s) in nonexistent "
-      "reference sequence!\n");
-      exit(1);
-      }
-    refModels = LoadReference(P);
-    if(P->verbose)
-      fprintf(stderr, "Checksum: %"PRIu64"\n", P->checksum);
-    }
+  if(P->verbose) PrintArgs(P);
 
-  I = (INF *) Calloc(P->nTar, sizeof(INF));
+  refModels = (CModel **) Malloc(P->nModels * sizeof(CModel *));
+  refModels = LoadReference(P);
 
-  totalSize  = 0;
-  totalBytes = 0;
-  for(n = 0 ; n < P->nTar ; ++n){
-    Compress(P, refModels, n, refNModels, I);
-    totalSize  += I[n].size;
-    totalBytes += I[n].bytes;
+  for(n = 0 ; n < P->nFiles ; ++n){
+    //Compress(P, refModels, n, refNModels, I);
     }
 
   if(P->nTar > 1)
     for(n = 0 ; n < P->nTar ; ++n){
-      fprintf(stdout, "File %d compressed bytes: %"PRIu64" (", n+1, (uint64_t) 
-      I[n].bytes);
+      fprintf(stdout, "File %d compressed bytes: %"PRIu64" (", n+1, (uint64_t) 444);
       PrintHRBytes(I[n].bytes);
       fprintf(stdout, ") , Normalized Dissimilarity Rate: %.6g\n", 
-      (8.0*I[n].bytes)/(2*I[n].size));
+      (8.0*444)/(2*333));
       }
 
-  fprintf(stdout, "Total bytes: %"PRIu64" (", totalBytes);
-  PrintHRBytes(totalBytes);
-  fprintf(stdout, "), %.4g bpb, Normalized Dissimilarity Rate: %.6g\n", 
-  ((8.0*totalBytes)/totalSize), (4.0*totalBytes)/totalSize);  
-  stop = clock();
-  fprintf(stdout, "Spent %g sec.\n", ((double)(stop-start))/CLOCKS_PER_SEC);
+  fprintf(stdout, "Spent %g sec.\n", ((double) (clock() - start)) /
+  CLOCKS_PER_SEC);
 
   return EXIT_SUCCESS;
   }

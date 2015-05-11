@@ -485,13 +485,18 @@ uint32_t ReadFNames(Parameters *P, char *arg)
   for( ; k != argLen ; ++k)
     if(arg[k] == ':')
       ++nFiles;
-  P->tar = (char **) Malloc(nFiles * sizeof(char *));
-  P->tar[0] = strtok(arg, ":");
-  TestReadFile(P->tar[0]);
-  for(k = 1 ; k != nFiles ; ++k)
-    {
-    P->tar[k] = strtok(NULL, ":");
-    TestReadFile(P->tar[k]);
+
+  if(nFiles < 2){
+    fprintf(stderr, "Error: you need at least two input files!\n");
+    exit(1);
+    }
+
+  P->files = (char **) Malloc(nFiles * sizeof(char *));
+  P->files[0] = strtok(arg, ":");
+  TestReadFile(P->files[0]);
+  for(k = 1 ; k < nFiles ; ++k){
+    P->files[k] = strtok(NULL, ":");
+    TestReadFile(P->files[k]);
     }
 
   return nFiles;

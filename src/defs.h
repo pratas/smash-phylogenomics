@@ -14,13 +14,11 @@
 #define FSEARCHMODE
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// UNCOMMENT ONLY ONE:
+// ATTENTION: UNCOMMENT ONLY ONE!!!
 //#define PREC32B // UNCOMMENT: CONTEXTS UP TO 28 (IT WILL USE HIGH MEMORY!)
 #define PREC16B // UNCOMMENT: CONTEXTS UP TO 20 (IT WILL USE MEDIUM MEMORY!)
 //#define PREC8B  // UNCOMMENT: CONTEXTS UP TO 16 (IT WILL USE LOW MEMORY!)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-//#define SWAP
 
 typedef uint64_t ULL;
 typedef uint64_t U64;
@@ -49,15 +47,13 @@ typedef struct{
   U8       estim;
   U8       level;
   U32      col;
-  ModelPar *model;
-  char     *ref;
-  char     **tar;
-  U8       nTar;
-  U64      checksum;
-  U64      size;
-  U32      watermark;
   double   gamma;
   U32      nModels;
+  ModelPar *model;
+  U8       nFiles;
+  char     **files;
+  U64      **size;
+  double   **matrix;
   }
 Parameters;
 
@@ -78,7 +74,7 @@ U32 garbage;
 #define DEFAULT_VERBOSE        0
 #define DEFAULT_FORCE          0
 #define DEFAULT_LEVEL          5
-#define MAX_LEVEL              9
+#define MAX_LEVEL              10
 #define MIN_LEVEL              1
 #define MAX_CTX                31
 #define MIN_CTX                1
