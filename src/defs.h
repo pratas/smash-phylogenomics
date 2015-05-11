@@ -29,7 +29,7 @@ typedef int64_t  I64;
 typedef int32_t  I32;
 typedef int16_t  I16;
 typedef int8_t   I8;
-
+/*
 typedef struct{
   U32    ctx;
   U32    den;
@@ -66,7 +66,7 @@ typedef struct{
 Threads;
 
 Parameters *P;
-
+*/
 U32 garbage;
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -8,7 +8,7 @@ CPLP   =
 CFLAGS = -O3 -Wall $(CPLP)
 #-----------------------------------------------------------------------------
 LIBS   = -lm
-DEPS   = defs.h
+DEPS   = defs.h param.h
 PROGS  = $(BIN)/smash-phylog
 OBJS   = mem.o msg.o common.o buffer.o levels.o context.o 
 #-----------------------------------------------------------------------------

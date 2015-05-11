@@ -7,6 +7,7 @@
 #include <time.h>
 #include "mem.h"
 #include "defs.h"
+#include "param.h"
 #include "msg.h"
 #include "buffer.h"
 #include "levels.h"

@@ -3,6 +3,7 @@
 
 #include "context.h"
 #include "defs.h"
+#include "param.h"
 
 typedef struct{
   uint64_t size;
