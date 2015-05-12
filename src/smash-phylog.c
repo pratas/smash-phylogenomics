@@ -331,6 +331,12 @@ CModel **LoadReference(Parameters *P, uint32_t ref)
 // - - - - - - - - - - - - - - C O M P R E S S O R - - - - - - - - - - - - - -
 void Compress(Threads T){
   //TODO: MODELS IN MEMORY!
+  CModel *Models;
+  uint32_t n;
+
+  for(n = 0 ; n < P->nModels ; ++n)
+    Models[n] = CreateCModel(P->model[n].ctx, P->model[n].den, P->model[n].ir, 
+    REFERENCE, P->col, P->model[n].edits, P->model[n].eDen);
 
   printf("Thread: %u\n", T.id);  
  
