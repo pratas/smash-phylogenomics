@@ -325,12 +325,19 @@ CModel **LoadReference(Parameters *P, uint32_t ref)
   */
 
 
+  //refModels = (CModel **) Malloc(P->nModels * sizeof(CModel *));
+
+void Compress(Threads T){
+   
+  return;
+  }
+
 
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - T H R E A D I N G - - - - - - - - - - - - - - -
 void *CompressThread(void *Thr){
   Threads *T = (Threads *) Thr;
-  //LoadReference(P[0]);
+  Compress(T[0]);
   pthread_exit(NULL);
   }
 
@@ -430,32 +437,30 @@ int32_t main(int argc, char *argv[]){
     P->matrix[n] = (double *) Calloc(P->nFiles, sizeof(double));
     }
 
+  //ASSERT nThreads <= nFiles:
+  if(P->nThreads > P->nFiles){
+    fprintf(stderr, "Error: the number of threads must not be higher than the "
+    "number of files\n");
+    exit(1);
+    }
+
   pthread_t t[P->nThreads];
 
-  for(ref = 0 ; ref < P->nFiles ; ++ref){
-   
+  ref = 0;
+  do{
     for(n = 0 ; n < P->nThreads ; ++n)
       pthread_create(&(t[n+1]), NULL, CompressThread, (void *) &(T[n]));
 
     for(n = 0 ; n < P->nThreads ; ++n) // DO NOT JOIN FORS!
       pthread_join(t[n+1], NULL);
-
     }
-
-  //refModels = (CModel **) Malloc(P->nModels * sizeof(CModel *));
-
-  for(ref = 0 ; ref < P->nFiles ; ++ref){
-    //refModels = LoadReference(P, ref);
-    for(tar = 0 ; tar < P->nFiles ; ++tar){
-      //Compress(P, refModels, n, refNModels, I);
-      }
-    }
-  
+  while((ref += P->nThreads) < P->nFiles);
+   
+  fprintf(stdout, "Final matrix:\n");
   for(n = 0 ; n < P->nFiles ; ++n){
-    fprintf(stdout, "File %d compressed bytes: %"PRIu64" (", n+1, (uint64_t) 444);
-    PrintHRBytes(444);
-    fprintf(stdout, ") , Normalized Dissimilarity Rate: %.6g\n", 
-    (8.0*444)/(2*333));
+    for(k = 0 ; k < P->nFiles ; ++k)
+      fprintf(stdout, "%7.5g ", P->matrix[n][k]);
+    fprintf(stdout, "\n");
     }
 
   fprintf(stdout, "Spent %g sec.\n", ((double) (clock() - start)) /
