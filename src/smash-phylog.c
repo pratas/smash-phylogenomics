@@ -327,6 +327,8 @@ CModel **LoadReference(Parameters *P, uint32_t ref)
 
   //refModels = (CModel **) Malloc(P->nModels * sizeof(CModel *));
 
+//////////////////////////////////////////////////////////////////////////////
+// - - - - - - - - - - - - - - C O M P R E S S O R - - - - - - - - - - - - - -
 void Compress(Threads T){
 
   printf("Thread: %u\n", T.id);  
@@ -455,7 +457,7 @@ int32_t main(int argc, char *argv[]){
     }
   while((ref += P->nThreads) < P->nFiles && ref + P->nThreads <= P->nFiles);
 
-  if(ref < P->nFiles){
+  if(ref < P->nFiles){ // EXTRA - OUT OF THE MAIN LOOP
     for(n = ref ; n < P->nFiles ; ++n)
       pthread_create(&(t[n+1]), NULL, CompressThread, (void *) &(T[n]));
     for(n = ref ; n < P->nFiles ; ++n) // DO NOT JOIN FORS!
