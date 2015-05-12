@@ -323,6 +323,18 @@ CModel **LoadReference(Parameters *P, uint32_t ref)
   return cModels;
   }
   */
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// - - - - - - - - - - - - - - T H R E A D I N G - - - - - - - - - - - - - - -
+void *CompressThread(void *Thr){
+  Threads *T = (Threads *) Thr;
+  //LoadReference(P[0]);
+  pthread_exit(NULL);
+  }
+
+
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - M A I N - - - - - - - - - - - - - - - - -
@@ -423,7 +435,7 @@ int32_t main(int argc, char *argv[]){
   for(ref = 0 ; ref < P->nFiles ; ++ref){
    
     for(n = 0 ; n < P->nThreads ; ++n)
-      pthread_create(&(t[n+1]), NULL, LoadRefThread, (void *) &(T[n]));
+      pthread_create(&(t[n+1]), NULL, CompressThread, (void *) &(T[n]));
 
     for(n = 0 ; n < P->nThreads ; ++n) // DO NOT JOIN FORS!
       pthread_join(t[n+1], NULL);
