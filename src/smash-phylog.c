@@ -330,16 +330,20 @@ CModel **LoadReference(Parameters *P, uint32_t ref)
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - C O M P R E S S O R - - - - - - - - - - - - - -
 void Compress(Threads T){
-  CModel *Models;
+  CModel **Models;
   uint32_t n;
 
+  Models = (CModel **) Malloc(P->nModels * sizeof(CModel *));
   for(n = 0 ; n < P->nModels ; ++n)
-    Models[n] = CreateCModel(P->model[n].ctx, P->model[n].den, P->model[n].ir, 
-    REFERENCE, P->col, P->model[n].edits, P->model[n].eDen);
+    Models[n] = CreateCModel(T.model[n].ctx, T.model[n].den, T.model[n].ir, 
+    REFERENCE, P->col, T.model[n].edits, T.model[n].eDen);
 
+  sleep(10);
   printf("Thread: %u\n", T.id);  
+
  
-  return;
+  for(n = 0 ; n < P->nModels ; ++n)
+    FreeCModel(Models[n]);
   }
 
 
