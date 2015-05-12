@@ -6,6 +6,7 @@
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // COMPRESSION LEVELS
 //
+// LEVEL_0 IS RESERVED TO THE ALGORITHM
 #define LEVEL_1 " 1: -m 13:100:0:0/0 "
 #define LEVEL_2 " 2: -m 13:100:1:0/0 "
 #define LEVEL_3 " 3: -m 14:200:0:0/0 "

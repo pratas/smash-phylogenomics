@@ -328,7 +328,9 @@ CModel **LoadReference(Parameters *P, uint32_t ref)
   //refModels = (CModel **) Malloc(P->nModels * sizeof(CModel *));
 
 void Compress(Threads T){
-   
+
+  printf("Thread: %u\n", T.id);  
+ 
   return;
   }
 
@@ -352,7 +354,6 @@ int32_t main(int argc, char *argv[]){
   int32_t     xargc = 0;
   uint32_t    n, k, col, ref, tar, thread;
   clock_t     start = clock();
-  //CModel      **refModels;
   double      gamma;
   Threads     *T;
   
@@ -400,17 +401,18 @@ int32_t main(int argc, char *argv[]){
     }
 
   // READ MODEL PARAMETERS FROM XARGS & ARGS
-  T = (Threads *) Calloc(P->nThreads, sizeof(Threads));
-  for(thread = 0 ; thread < P->nThreads ; ++thread){
-    T[thread].model = (ModelPar *) Calloc(P->nModels, sizeof(ModelPar));
+  T = (Threads *) Calloc(P->nFiles, sizeof(Threads));
+  for(ref = 0 ; ref < P->nFiles ; ++ref){
+    T[ref].model = (ModelPar *) Calloc(P->nModels, sizeof(ModelPar));
+    T[ref].id = ref;
     k = 0;
     for(n = 1 ; n < argc ; ++n)
       if(strcmp(argv[n], "-m") == 0)
-        T[thread].model[k++] = ArgsUniqModel(argv[n+1], 0);
+        T[ref].model[k++] = ArgsUniqModel(argv[n+1], 0);
     if(P->level != 0){
       for(n = 1 ; n < xargc ; ++n)
         if(strcmp(xargv[n], "-m") == 0)
-          T[thread].model[k++] = ArgsUniqModel(xargv[n+1], 0);
+          T[ref].model[k++] = ArgsUniqModel(xargv[n+1], 0);
       }
     }
 
@@ -429,7 +431,7 @@ int32_t main(int argc, char *argv[]){
   P->gamma    = ((int)(P->gamma * 65536)) / 65536.0;
   P->nFiles   = ReadFNames (P, argv[argc-1]);
 
-  if(P->verbose) PrintArgs(P, &T[0]);
+  //if(P->verbose) PrintArgs(P, T[0]);
 
   P->size   = (uint64_t *) Calloc(P->nFiles, sizeof(uint64_t));
   P->matrix = (double  **) Calloc(P->nFiles, sizeof(double *));
@@ -445,17 +447,22 @@ int32_t main(int argc, char *argv[]){
     }
 
   pthread_t t[P->nThreads];
-
   ref = 0;
   do{
     for(n = 0 ; n < P->nThreads ; ++n)
-      pthread_create(&(t[n+1]), NULL, CompressThread, (void *) &(T[n]));
-
+      pthread_create(&(t[n+1]), NULL, CompressThread, (void *) &(T[ref]));
     for(n = 0 ; n < P->nThreads ; ++n) // DO NOT JOIN FORS!
       pthread_join(t[n+1], NULL);
     }
-  while((ref += P->nThreads) < P->nFiles);
-   
+  while((ref += P->nThreads) < P->nFiles && ref + P->nThreads <= P->nFiles);
+
+  if(ref < P->nFiles){
+    for(n = ref ; n < P->nFiles ; ++n)
+      pthread_create(&(t[n+1]), NULL, CompressThread, (void *) &(T[n]));
+    for(n = ref ; n < P->nFiles ; ++n) // DO NOT JOIN FORS!
+      pthread_join(t[n+1], NULL);
+    }   
+
   fprintf(stdout, "Final matrix:\n");
   for(n = 0 ; n < P->nFiles ; ++n){
     for(k = 0 ; k < P->nFiles ; ++k)
@@ -463,8 +470,7 @@ int32_t main(int argc, char *argv[]){
     fprintf(stdout, "\n");
     }
 
-  fprintf(stdout, "Spent %g sec.\n", ((double) (clock() - start)) /
-  CLOCKS_PER_SEC);
+  fprintf(stdout, "Spent %g s.\n", ((double)(clock()-start))/CLOCKS_PER_SEC);
 
   return EXIT_SUCCESS;
   }
