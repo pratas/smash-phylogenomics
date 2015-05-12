@@ -5,6 +5,7 @@
 #include <float.h>
 #include <ctype.h>
 #include <time.h>
+#include <pthread.h>
 #include "mem.h"
 #include "defs.h"
 #include "param.h"
@@ -355,7 +356,8 @@ int32_t main(int argc, char *argv[]){
   P->verbose  = ArgsState  (DEFAULT_VERBOSE, p, argc, "-v" );
   P->force    = ArgsState  (DEFAULT_FORCE,   p, argc, "-f" );
   P->level    = ArgsNum    (0, p, argc, "-l", MIN_LEVEL, MAX_LEVEL);
-  P->nThreads = ArgsNum    (DEFAULT_THREADS, p, argc, "-t", MIN_THREADS, MAX_THREADS);
+  P->nThreads = ArgsNum    (DEFAULT_THREADS, p, argc, "-t", MIN_THREADS, 
+  MAX_THREADS);
 
   P->nModels  = 0;
   for(n = 1 ; n < argc ; ++n)
@@ -412,20 +414,29 @@ int32_t main(int argc, char *argv[]){
 
   P->size   = (uint64_t *) Calloc(P->nFiles, sizeof(uint64_t));
   P->matrix = (double  **) Calloc(P->nFiles, sizeof(double *));
-  for(n = 0 ; n < P->nFiles ; ++n)
+  for(n = 0 ; n < P->nFiles ; ++n){
     P->matrix[n] = (double *) Calloc(P->nFiles, sizeof(double));
+    }
+
+  pthread_t t[P->nThreads];
+
+  for(ref = 0 ; ref < P->nFiles ; ++ref){
+   
+    for(n = 0 ; n < P->nThreads ; ++n)
+      pthread_create(&(t[n+1]), NULL, LoadRefThread, (void *) &(T[n]));
+
+    for(n = 0 ; n < P->nThreads ; ++n) // DO NOT JOIN FORS!
+      pthread_join(t[n+1], NULL);
+
+    }
 
   //refModels = (CModel **) Malloc(P->nModels * sizeof(CModel *));
 
-  
-
   for(ref = 0 ; ref < P->nFiles ; ++ref){
     //refModels = LoadReference(P, ref);
-
     for(tar = 0 ; tar < P->nFiles ; ++tar){
       //Compress(P, refModels, n, refNModels, I);
       }
-
     }
   
   for(n = 0 ; n < P->nFiles ; ++n){

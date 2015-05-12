@@ -13,3 +13,6 @@ SET(CMAKE_BUILD_TYPE Release)
 
 add_executable (smash-phylog smash-phylog.c mem.c msg.c common.c buffer.c levels.c context.c defs.h param.h) 
 
+TARGET_LINK_LIBRARIES(smash-phylog
+pthread
+)
