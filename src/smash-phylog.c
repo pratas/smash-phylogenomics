@@ -352,7 +352,7 @@ void *CompressThread(void *Thr){
 int32_t main(int argc, char *argv[]){
   char        **p = *&argv, **xargv, *xpl = NULL;
   int32_t     xargc = 0;
-  uint32_t    n, k, col, ref, tar, thread;
+  uint32_t    n, k, col, ref;
   clock_t     start = clock();
   double      gamma;
   Threads     *T;
@@ -379,6 +379,21 @@ int32_t main(int argc, char *argv[]){
   P->nThreads = ArgsNum    (DEFAULT_THREADS, p, argc, "-t", MIN_THREADS, 
   MAX_THREADS);
 
+  gamma = DEFAULT_GAMMA;
+  for(n = 1 ; n < xargc ; ++n) 
+    if(strcmp(xargv[n], "-g") == 0) 
+      gamma = atof(xargv[n+1]);
+
+  col = MAX_COLLISIONS;
+  for(n = 1 ; n < xargc ; ++n) 
+    if(strcmp(xargv[n], "-c") == 0) 
+      col = atoi(xargv[n+1]);
+
+  P->col      = ArgsNum    (col,   p, argc, "-c", 1, 200);
+  P->gamma    = ArgsDouble (gamma, p, argc, "-g");
+  P->gamma    = ((int)(P->gamma * 65536)) / 65536.0;
+  P->nFiles   = ReadFNames (P, argv[argc-1]);
+
   P->nModels  = 0;
   for(n = 1 ; n < argc ; ++n)
     if(strcmp(argv[n], "-m") == 0)
@@ -386,7 +401,7 @@ int32_t main(int argc, char *argv[]){
 
   if(P->nModels == 0 && P->level == 0)
     P->level = DEFAULT_LEVEL;
-  
+
   if(P->level != 0){
     xpl = GetLevels(P->level);
     xargc = StrToArgv(xpl, &xargv);
@@ -416,22 +431,7 @@ int32_t main(int argc, char *argv[]){
       }
     }
 
-  gamma = DEFAULT_GAMMA;
-  for(n = 1 ; n < xargc ; ++n) 
-    if(strcmp(xargv[n], "-g") == 0) 
-      gamma = atof(xargv[n+1]);
-
-  col = MAX_COLLISIONS;
-  for(n = 1 ; n < xargc ; ++n) 
-    if(strcmp(xargv[n], "-c") == 0) 
-      col = atoi(xargv[n+1]);
-
-  P->col      = ArgsNum    (col,   p, argc, "-c", 1, 200);
-  P->gamma    = ArgsDouble (gamma, p, argc, "-g");
-  P->gamma    = ((int)(P->gamma * 65536)) / 65536.0;
-  P->nFiles   = ReadFNames (P, argv[argc-1]);
-
-  //if(P->verbose) PrintArgs(P, T[0]);
+  if(P->verbose) PrintArgs(P, T[0]);
 
   P->size   = (uint64_t *) Calloc(P->nFiles, sizeof(uint64_t));
   P->matrix = (double  **) Calloc(P->nFiles, sizeof(double *));
@@ -439,7 +439,6 @@ int32_t main(int argc, char *argv[]){
     P->matrix[n] = (double *) Calloc(P->nFiles, sizeof(double));
     }
 
-  //ASSERT nThreads <= nFiles:
   if(P->nThreads > P->nFiles){
     fprintf(stderr, "Error: the number of threads must not be higher than the "
     "number of files\n");
@@ -450,7 +449,7 @@ int32_t main(int argc, char *argv[]){
   ref = 0;
   do{
     for(n = 0 ; n < P->nThreads ; ++n)
-      pthread_create(&(t[n+1]), NULL, CompressThread, (void *) &(T[ref]));
+      pthread_create(&(t[n+1]), NULL, CompressThread, (void *) &(T[ref+n]));
     for(n = 0 ; n < P->nThreads ; ++n) // DO NOT JOIN FORS!
       pthread_join(t[n+1], NULL);
     }
