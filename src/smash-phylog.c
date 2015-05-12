@@ -329,6 +329,7 @@ CModel **LoadReference(Parameters *P, uint32_t ref)
 
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - C O M P R E S S O R - - - - - - - - - - - - - -
+
 void Compress(Threads T){
   CModel **Models;
   uint32_t n;
@@ -340,7 +341,6 @@ void Compress(Threads T){
 
   sleep(10);
   printf("Thread: %u\n", T.id);  
-
  
   for(n = 0 ; n < P->nModels ; ++n)
     FreeCModel(Models[n]);
@@ -349,6 +349,7 @@ void Compress(Threads T){
 
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - T H R E A D I N G - - - - - - - - - - - - - - -
+
 void *CompressThread(void *Thr){
   Threads *T = (Threads *) Thr;
   Compress(T[0]);
