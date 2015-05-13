@@ -16,6 +16,8 @@
 #include "common.h"
 #include "context.h"
 
+CModel **Models;
+
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - C O M P R E S S O R - - - - - - - - - - - - - -
 /*
@@ -228,16 +230,31 @@ refNModels, INF *I){
 
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - - - F I L T E R I N G - - - - - - - - - - - - -
-void FilterTarget(Threads T, CModel **cModels, uint32_t id, uint32_t n){
+
+void FilterTarget(Threads T){
+  //XXX: REF , TAR , wTAR ?
+
+
 
   return;
   }
 
 
 //////////////////////////////////////////////////////////////////////////////
+// - - - - - - - - - - - - - - T H R E A D I N G - - - - - - - - - - - - - - -
+
+void *FilterThread(void *Thr){
+  Threads *T = (Threads *) Thr;
+  FilterTarget(T[0]);
+  pthread_exit(NULL);
+  }
+
+
+//////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - - - R E F E R E N C E - - - - - - - - - - - - -
 
-void LoadReference(Threads T, CModel **cModels, FILE *Reader){
+void LoadReference(Threads T){
+  FILE     *Reader = Fopen(P->files[T.id], "r");
   uint32_t n, k, idxPos;
   PARSER   *PA = CreateParser();
   CBUF     *symBuf = CreateCBuffer(BUFFER_SIZE, BGUARD);
@@ -253,11 +270,11 @@ void LoadReference(Threads T, CModel **cModels, FILE *Reader){
       symBuf->buf[symBuf->idx] = sym = DNASymToNum(sym);
 
       for(n = 0 ; n < P->nModels ; ++n){
-        GetPModelIdx(symBuf->buf+symBuf->idx-1, cModels[n]);
-        UpdateCModelCounter(cModels[n], sym, cModels[n]->pModelIdx);
-        if(cModels[n]->ir == 1){                         // Inverted repeats
-          irSym = GetPModelIdxIR(symBuf->buf+symBuf->idx, cModels[n]);
-          UpdateCModelCounter(cModels[n], irSym, cModels[n]->pModelIdxIR);
+        GetPModelIdx(symBuf->buf+symBuf->idx-1, Models[n]);
+        UpdateCModelCounter(Models[n], sym, Models[n]->pModelIdx);
+        if(Models[n]->ir == 1){                         // INVERTED REPEATS
+          irSym = GetPModelIdxIR(symBuf->buf+symBuf->idx, Models[n]);
+          UpdateCModelCounter(Models[n], irSym, Models[n]->pModelIdxIR);
           }
         }
 
@@ -265,32 +282,48 @@ void LoadReference(Threads T, CModel **cModels, FILE *Reader){
       }
  
   for(n = 0 ; n < P->nModels ; ++n)
-    ResetCModelIdx(cModels[n]);
+    ResetCModelIdx(Models[n]);
   Free(readBuf);
   RemoveCBuffer(symBuf);
   RemoveParser(PA);
+  fclose(Reader);
   }
+
 
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - C O M P R E S S O R - - - - - - - - - - - - - -
 
-void Compress(Threads T){
-  FILE *IN = Fopen(P->files[T.id], "r");
-  CModel **Models;
+void CompressAction(Threads *T, uint32_t ref){
   uint32_t n;
 
   Models = (CModel **) Malloc(P->nModels * sizeof(CModel *));
   for(n = 0 ; n < P->nModels ; ++n)
-    Models[n] = CreateCModel(T.model[n].ctx, T.model[n].den, T.model[n].ir, 
-    REFERENCE, P->col, T.model[n].edits, T.model[n].eDen);
+    Models[n] = CreateCModel(T[ref].model[n].ctx, T[ref].model[n].den, 
+    T[ref].model[n].ir, REFERENCE, P->col, T[ref].model[n].edits, 
+    T[ref].model[n].eDen);
 
-  LoadReference(T, Models, IN);
-  fclose(IN);
-  for(n = 0 ; n < P->nFiles ; ++n)
-    if(T.id != n)
-      FilterTarget(T, Models, T.id, n);
+  LoadReference(T[ref]);
 
-/*
+  pthread_t t[P->nThreads];
+
+  //XXX: if n = ref ??? (DIAGONAL)
+  ref = 0;
+  do{
+    for(n = 0 ; n < P->nThreads ; ++n)
+      pthread_create(&(t[n+1]), NULL, FilterThread, (void *) &(T[ref+n]));
+    for(n = 0 ; n < P->nThreads ; ++n) // DO NOT JOIN FORS!
+      pthread_join(t[n+1], NULL);
+    }
+  while((ref += P->nThreads) < P->nFiles && ref + P->nThreads <= P->nFiles);
+
+  if(ref < P->nFiles){ // EXTRA - OUT OF THE MAIN LOOP
+    for(n = ref ; n < P->nFiles ; ++n)
+      pthread_create(&(t[n+1]), NULL, FilterThread, (void *) &(T[n]));
+    for(n = ref ; n < P->nFiles ; ++n) // DO NOT JOIN FORS!
+      pthread_join(t[n+1], NULL);
+    }
+
+/*// HERE, WITH THREADING, MEMORY IS QUADRATIC!
   for(n = 0 ; n < P->nFiles ; ++n)
     if(T.id != n){
       //LoadReference(T, Models, IN); //NEW REFERENCE
@@ -300,16 +333,6 @@ void Compress(Threads T){
  
   for(n = 0 ; n < P->nModels ; ++n)
     FreeCModel(Models[n]);
-  }
-
-
-//////////////////////////////////////////////////////////////////////////////
-// - - - - - - - - - - - - - - T H R E A D I N G - - - - - - - - - - - - - - -
-
-void *CompressThread(void *Thr){
-  Threads *T = (Threads *) Thr;
-  Compress(T[0]);
-  pthread_exit(NULL);
   }
 
 
@@ -414,25 +437,11 @@ int32_t main(int argc, char *argv[]){
     exit(1);
     }
 
-  fprintf(stderr, "Running compression using %u thread%s...\n", P->nThreads,
-  P->nThreads == 1 ? " " : "s ");
-  pthread_t t[P->nThreads];
-  ref = 0;
-  do{
-    for(n = 0 ; n < P->nThreads ; ++n)
-      pthread_create(&(t[n+1]), NULL, CompressThread, (void *) &(T[ref+n]));
-    for(n = 0 ; n < P->nThreads ; ++n) // DO NOT JOIN FORS!
-      pthread_join(t[n+1], NULL);
+  for(n = 0 ; n < P->nFiles ; ++n){
+    fprintf(stderr, "Running reference %u ...\n", n+1);
+    CompressAction(T, n);
+    fprintf(stderr, "Done!\n");
     }
-  while((ref += P->nThreads) < P->nFiles && ref + P->nThreads <= P->nFiles);
-
-  if(ref < P->nFiles){ // EXTRA - OUT OF THE MAIN LOOP
-    for(n = ref ; n < P->nFiles ; ++n)
-      pthread_create(&(t[n+1]), NULL, CompressThread, (void *) &(T[n]));
-    for(n = ref ; n < P->nFiles ; ++n) // DO NOT JOIN FORS!
-      pthread_join(t[n+1], NULL);
-    }   
-  fprintf(stderr, "Done!\n");
 
   fprintf(stdout, "Final matrix:\n");
   for(n = 0 ; n < P->nFiles ; ++n){
