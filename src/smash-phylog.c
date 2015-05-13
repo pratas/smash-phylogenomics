@@ -229,18 +229,18 @@ refNModels, INF *I){
 // - - - - - - - - - - - - - - - - R E F E R E N C E - - - - - - - - - - - - -
 
 void LoadReference(Threads T, CModel **cModels, FILE *Reader){
-  uint32_t  n, k, idxPos;
-  uint8_t   *readerBuffer, sym, irSym;
-  PARSER    *PA = CreateParser();
-  CBUF      *symBuf = CreateCBuffer(BUFFER_SIZE, BGUARD);
+  uint32_t n, k, idxPos;
+  PARSER   *PA = CreateParser();
+  CBUF     *symBuf = CreateCBuffer(BUFFER_SIZE, BGUARD);
+  uint8_t  *readBuf = (uint8_t *) Calloc(BUFFER_SIZE, sizeof(uint8_t));
+  uint8_t  sym, irSym;
 
   FileType(PA, Reader);
-  readerBuffer  = (uint8_t *) Calloc(BUFFER_SIZE + 1, sizeof(uint8_t));
 
-  while((k = fread(readerBuffer, 1, BUFFER_SIZE, Reader)))
+  while((k = fread(readBuf, 1, BUFFER_SIZE, Reader)))
     for(idxPos = 0 ; idxPos < k ; ++idxPos){
 
-      if(ParseSym(PA, (sym = readerBuffer[idxPos])) == -1) continue;
+      if(ParseSym(PA, (sym = readBuf[idxPos])) == -1) continue;
       symBuf->buf[symBuf->idx] = sym = DNASymToNum(sym);
 
       for(n = 0 ; n < P->nModels ; ++n){
@@ -257,7 +257,7 @@ void LoadReference(Threads T, CModel **cModels, FILE *Reader){
  
   for(n = 0 ; n < P->nModels ; ++n)
     ResetCModelIdx(cModels[n]);
-  Free(readerBuffer);
+  Free(readBuf);
   RemoveCBuffer(symBuf);
   RemoveParser(PA);
   }
