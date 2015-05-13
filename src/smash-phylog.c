@@ -231,8 +231,7 @@ void LoadReference(Threads T, CModel **cModels, FILE *Reader){
   uint32_t  n, k, idxPos;
   uint64_t  nBases = 0;
   int32_t   idx = 0;
-  uint8_t   *readerBuffer, *symbolBuffer, sym, irSym, type = 0, header = 1, 
-            line = 0, dna = 0;
+  uint8_t   *readerBuffer, *symbolBuffer, sym, irSym, type = 0, header = 1;
 
   readerBuffer  = (uint8_t *) Calloc(BUFFER_SIZE + 1, sizeof(uint8_t));
   symbolBuffer  = (uint8_t *) Calloc(BUFFER_SIZE + BGUARD + 1, sizeof(uint8_t));
@@ -241,7 +240,6 @@ void LoadReference(Threads T, CModel **cModels, FILE *Reader){
   sym = fgetc(Reader);
   switch(sym){ 
     case '>': type = 1; break;
-    case '@': type = 2; break;
     default : type = 0;
     }
   rewind(Reader);
@@ -256,17 +254,7 @@ void LoadReference(Threads T, CModel **cModels, FILE *Reader){
         if(sym == '\n') continue;
         if(header == 1) continue;
         }
-      else if(type == 2){ // IS A FAST[Q] FILE
-        switch(line){
-          case 0: if(sym == '\n'){ line = 1; dna = 1; } break;
-          case 1: if(sym == '\n'){ line = 2; dna = 0; } break;
-          case 2: if(sym == '\n'){ line = 3; dna = 0; } break;
-          case 3: if(sym == '\n'){ line = 0; dna = 0; } break;
-          }
-        if(dna == 0 || sym == '\n') continue;
-        }
 
-      // FINAL FILTERING DNA CONTENT
       if(sym != 'A' && sym != 'C' && sym != 'G' && sym != 'T')
         continue;
 
@@ -285,6 +273,8 @@ void LoadReference(Threads T, CModel **cModels, FILE *Reader){
         memcpy(symbolBuffer - BGUARD, symbolBuffer + idx - BGUARD, BGUARD);
         idx = 0;
         }
+
+      ++nBases; // NOTHING IS DONE WITH THIS
       }
  
   for(n = 0 ; n < P->nModels ; ++n)
@@ -426,6 +416,8 @@ int32_t main(int argc, char *argv[]){
     exit(1);
     }
 
+  fprintf(stderr, "Running compression using %u thread%s...\n", P->nThreads,
+  P->nThreads == 1 ? " " : "s ");
   pthread_t t[P->nThreads];
   ref = 0;
   do{
@@ -442,6 +434,7 @@ int32_t main(int argc, char *argv[]){
     for(n = ref ; n < P->nFiles ; ++n) // DO NOT JOIN FORS!
       pthread_join(t[n+1], NULL);
     }   
+  fprintf(stderr, "Done!\n");
 
   fprintf(stdout, "Final matrix:\n");
   for(n = 0 ; n < P->nFiles ; ++n){
@@ -450,7 +443,9 @@ int32_t main(int argc, char *argv[]){
     fprintf(stdout, "\n");
     }
 
-  fprintf(stdout, "Spent %g s.\n", ((double)(clock()-start))/CLOCKS_PER_SEC);
+  //TODO: human readable & min protection
+  fprintf(stdout, "Total cpu time: %.2g minutes.\n", (((double) (clock() - 
+  start)) / CLOCKS_PER_SEC) / 60.);
 
   return EXIT_SUCCESS;
   }
