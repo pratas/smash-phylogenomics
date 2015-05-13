@@ -225,6 +225,15 @@ refNModels, INF *I){
   }
 */
 
+
+//////////////////////////////////////////////////////////////////////////////
+// - - - - - - - - - - - - - - - - F I L T E R I N G - - - - - - - - - - - - -
+void FilterTarget(Threads T, CModel **cModels, uint32_t id, uint32_t n){
+
+  return;
+  }
+
+
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - - - R E F E R E N C E - - - - - - - - - - - - -
 
@@ -279,8 +288,7 @@ void Compress(Threads T){
   fclose(IN);
   for(n = 0 ; n < P->nFiles ; ++n)
     if(T.id != n)
-      ;
-      //FilterTarget(T, Models, T.id, n);
+      FilterTarget(T, Models, T.id, n);
 
 /*
   for(n = 0 ; n < P->nFiles ; ++n)
