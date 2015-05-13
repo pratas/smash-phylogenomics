@@ -234,7 +234,7 @@ refNModels, INF *I){
 void FilterTarget(Threads T){
   //XXX: REF , TAR , wTAR ?
 
-
+  P->matrix[P->ref][T.id] = P->ref + T.id;
 
   return;
   }
@@ -295,6 +295,7 @@ void LoadReference(Threads T){
 
 void CompressAction(Threads *T, uint32_t ref){
   uint32_t n;
+  pthread_t t[P->nThreads];
 
   Models = (CModel **) Malloc(P->nModels * sizeof(CModel *));
   for(n = 0 ; n < P->nModels ; ++n)
@@ -303,10 +304,8 @@ void CompressAction(Threads *T, uint32_t ref){
     T[ref].model[n].eDen);
 
   LoadReference(T[ref]);
+  P->ref = ref;
 
-  pthread_t t[P->nThreads];
-
-  //XXX: if n = ref ??? (DIAGONAL)
   ref = 0;
   do{
     for(n = 0 ; n < P->nThreads ; ++n)

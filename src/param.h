@@ -30,12 +30,12 @@ typedef struct{
   U64      *size;
   char     **files;
   double   **matrix;
+  uint32_t ref;
   }
 Parameters;
 
 typedef struct{
   uint32_t id;
-  uint32_t ref;
   uint32_t tar;
   ModelPar *model;
   }
