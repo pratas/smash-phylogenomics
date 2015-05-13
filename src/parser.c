@@ -31,15 +31,35 @@ void FileType(PARSER *PA, FILE *IN){
 // PARSE SYM
 //
 int32_t ParseSym(PARSER *PA, uint8_t sym){
-  // IS A FASTA FILE
-  if(PA->type == 1){
-    switch(sym){
-      case '>':  PA->header = 1; return -1;
-      case '\n': PA->header = 0; return -1;
-      default:   if(PA->header==1) return -1;
-      }
+
+  switch(PA->type){
+    // IS A FASTA FILE
+    case 1:
+      switch(sym){
+        case '>':  PA->header = 1; return -1;
+        case '\n': PA->header = 0; return -1;
+        default:   if(PA->header==1) return -1;
+        }
+    break;
+
+    // IS A FASTQ FILE
+    case 2:
+      /*
+      switch(line){
+        case 0: if(sym == '\n'){ line = 1; dna = 1; begin = 0; } break;
+        case 1: if(sym == '\n'){ line = 2; dna = 0; }            break;
+        case 2: if(sym == '\n'){ line = 3; dna = 0; }            break;
+        case 3: if(sym == '\n'){ line = 0; dna = 0; }            break;
+        }
+      if(dna == 0 || sym == '\n') continue;
+      */
+    break;
+
+    // OTHER (SUCH AS DNA SEQ)
+    default: ;
     }
 
+  // NUCLEOTIDE PARSE
   if(sym != 'A' && sym != 'C' && sym != 'G' && sym != 'T')
     return -1;
 
