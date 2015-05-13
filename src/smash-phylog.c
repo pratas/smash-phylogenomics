@@ -230,46 +230,35 @@ refNModels, INF *I){
 
 void LoadReference(Threads T, CModel **cModels, FILE *Reader){
   uint32_t  n, k, idxPos;
-  uint64_t  nBases = 0;
-  int32_t   idx = 0;
-  uint8_t   *readerBuffer, *symbolBuffer, sym, irSym;
+  uint8_t   *readerBuffer, sym, irSym;
   PARSER    *PA = CreateParser();
-
-  readerBuffer  = (uint8_t *) Calloc(BUFFER_SIZE + 1, sizeof(uint8_t));
-  symbolBuffer  = (uint8_t *) Calloc(BUFFER_SIZE + BGUARD + 1, sizeof(uint8_t));
-  symbolBuffer += BGUARD;
+  CBUF      *symBuf = CreateCBuffer(BUFFER_SIZE, BGUARD);
 
   FileType(PA, Reader);
+  readerBuffer  = (uint8_t *) Calloc(BUFFER_SIZE + 1, sizeof(uint8_t));
 
   while((k = fread(readerBuffer, 1, BUFFER_SIZE, Reader)))
     for(idxPos = 0 ; idxPos < k ; ++idxPos){
 
-      if(ParseSym(PA, (sym = readerBuffer[idxPos])) == -1)
-        continue;
-
-      symbolBuffer[idx] = sym = DNASymToNum(sym);
+      if(ParseSym(PA, (sym = readerBuffer[idxPos])) == -1) continue;
+      symBuf->buf[symBuf->idx] = sym = DNASymToNum(sym);
 
       for(n = 0 ; n < P->nModels ; ++n){
-        GetPModelIdx(symbolBuffer+idx-1, cModels[n]);
+        GetPModelIdx(symBuf->buf+symBuf->idx-1, cModels[n]);
         UpdateCModelCounter(cModels[n], sym, cModels[n]->pModelIdx);
         if(cModels[n]->ir == 1){                         // Inverted repeats
-          irSym = GetPModelIdxIR(symbolBuffer+idx, cModels[n]);
+          irSym = GetPModelIdxIR(symBuf->buf+symBuf->idx, cModels[n]);
           UpdateCModelCounter(cModels[n], irSym, cModels[n]->pModelIdxIR);
           }
         }
 
-      if(++idx == BUFFER_SIZE){
-        memcpy(symbolBuffer - BGUARD, symbolBuffer + idx - BGUARD, BGUARD);
-        idx = 0;
-        }
-
-      ++nBases; // NOTHING IS DONE WITH THIS
+      UpdateCBuffer(symBuf);
       }
  
   for(n = 0 ; n < P->nModels ; ++n)
     ResetCModelIdx(cModels[n]);
   Free(readerBuffer);
-  Free(symbolBuffer-BGUARD);
+  RemoveCBuffer(symBuf);
   RemoveParser(PA);
   }
 
