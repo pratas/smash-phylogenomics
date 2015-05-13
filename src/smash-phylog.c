@@ -223,33 +223,20 @@ refNModels, INF *I){
   I[id].size  = compressed;
   }
 */
-/*
+
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - - - R E F E R E N C E - - - - - - - - - - - - -
 
-CModel **LoadReference(Parameters *P, uint32_t ref)
-  {
-  FILE      *Reader = Fopen(P->files[ref], "r");
+void LoadReference(Threads T, CModel **cModels, FILE *Reader){
   uint32_t  n, k, idxPos;
   uint64_t  nBases = 0;
   int32_t   idx = 0;
   uint8_t   *readerBuffer, *symbolBuffer, sym, irSym, type = 0, header = 1, 
             line = 0, dna = 0;
-  CModel    **cModels;
-  #ifdef PROGRESS
-  uint64_t  i = 0;
-  #endif
-
-  if(P->verbose == 1)
-    fprintf(stdout, "Building reference model ...\n");
 
   readerBuffer  = (uint8_t *) Calloc(BUFFER_SIZE + 1, sizeof(uint8_t));
   symbolBuffer  = (uint8_t *) Calloc(BUFFER_SIZE + BGUARD + 1, sizeof(uint8_t));
   symbolBuffer += BGUARD;
-  cModels       = (CModel **) Malloc(P->nModels * sizeof(CModel *)); 
-  for(n = 0 ; n < P->nModels ; ++n)
-    cModels[n] = CreateCModel(P->model[n].ctx, P->model[n].den, 
-    P->model[n].ir, REFERENCE, P->col, P->model[n].edits, P->model[n].eDen);
 
   sym = fgetc(Reader);
   switch(sym){ 
@@ -258,12 +245,6 @@ CModel **LoadReference(Parameters *P, uint32_t ref)
     default : type = 0;
     }
   rewind(Reader);
-
-  switch(type){
-    case 1:  nBases = NDNASymInFasta(Reader); break;
-    case 2:  nBases = NDNASymInFastq(Reader); break;
-    default: nBases = NDNASyminFile (Reader); break;
-    }
 
   while((k = fread(readerBuffer, 1, BUFFER_SIZE, Reader)))
     for(idxPos = 0 ; idxPos < k ; ++idxPos){
@@ -304,33 +285,19 @@ CModel **LoadReference(Parameters *P, uint32_t ref)
         memcpy(symbolBuffer - BGUARD, symbolBuffer + idx - BGUARD, BGUARD);
         idx = 0;
         }
-      #ifdef PROGRESS
-      CalcProgress(nBases, ++i);
-      #endif
       }
  
   for(n = 0 ; n < P->nModels ; ++n)
     ResetCModelIdx(cModels[n]);
   Free(readerBuffer);
   Free(symbolBuffer-BGUARD);
-  fclose(Reader);
-
-  if(P->verbose == 1)
-    fprintf(stdout, "Done!                          \n");  // SPACES ARE VALID  
-  else
-    fprintf(stdout, "                               \n");  // SPACES ARE VALID
-
-  return cModels;
   }
-  */
-
-
-  //refModels = (CModel **) Malloc(P->nModels * sizeof(CModel *));
 
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - C O M P R E S S O R - - - - - - - - - - - - - -
 
 void Compress(Threads T){
+  FILE *IN = Fopen(P->files[T.id], "r");
   CModel **Models;
   uint32_t n;
 
@@ -339,8 +306,9 @@ void Compress(Threads T){
     Models[n] = CreateCModel(T.model[n].ctx, T.model[n].den, T.model[n].ir, 
     REFERENCE, P->col, T.model[n].edits, T.model[n].eDen);
 
-  sleep(10);
-  printf("Thread: %u\n", T.id);  
+  LoadReference(T, Models, IN);
+  fclose(IN);
+  //CompressTarget(T, Models);
  
   for(n = 0 ; n < P->nModels ; ++n)
     FreeCModel(Models[n]);
