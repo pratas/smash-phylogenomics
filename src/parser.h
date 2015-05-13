@@ -11,6 +11,8 @@ typedef struct{
   uint8_t  sym;
   uint8_t  type;
   uint8_t  header;
+  uint8_t  line;
+  uint8_t  dna;
   }
 PARSER;
 

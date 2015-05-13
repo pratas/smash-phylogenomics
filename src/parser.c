@@ -10,6 +10,8 @@ PARSER *CreateParser(void){
   PA->sym    = 0;
   PA->type   = 0;
   PA->header = 0;
+  PA->line   = 0;
+  PA->dna    = 0;
   return PA;
   }
 
@@ -44,19 +46,17 @@ int32_t ParseSym(PARSER *PA, uint8_t sym){
 
     // IS A FASTQ FILE
     case 2:
-      /*
-      switch(line){
-        case 0: if(sym == '\n'){ line = 1; dna = 1; begin = 0; } break;
-        case 1: if(sym == '\n'){ line = 2; dna = 0; }            break;
-        case 2: if(sym == '\n'){ line = 3; dna = 0; }            break;
-        case 3: if(sym == '\n'){ line = 0; dna = 0; }            break;
+      switch(PA->line){
+        case 0: if(sym == '\n'){ PA->line = 1; PA->dna = 1; } break;
+        case 1: if(sym == '\n'){ PA->line = 2; PA->dna = 0; } break;
+        case 2: if(sym == '\n'){ PA->line = 3; PA->dna = 0; } break;
+        case 3: if(sym == '\n'){ PA->line = 0; PA->dna = 0; } break;
         }
-      if(dna == 0 || sym == '\n') continue;
-      */
+      if(PA->dna == 0 || sym == '\n') return -1;
     break;
 
     // OTHER (SUCH AS DNA SEQ)
-    default: ;
+    default: ; // DO NOTHING
     }
 
   // NUCLEOTIDE PARSE
