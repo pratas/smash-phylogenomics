@@ -298,7 +298,15 @@ void Compress(Threads T){
 
   LoadReference(T, Models, IN);
   fclose(IN);
-  //CompressTarget(T, Models);
+  for(n = 0 ; n < P->nFiles ; ++n)
+    if(T.id != n)
+      //FilterTarget(T, Models, T.id, n);
+
+  for(n = 0 ; n < P->nFiles ; ++n)
+    if(T.id != n){
+      //LoadReference(T, Models, IN); //NEW REFERENCE
+      //CompressTarget(T, Models, T.id, n);
+      }
  
   for(n = 0 ; n < P->nModels ; ++n)
     FreeCModel(Models[n]);
