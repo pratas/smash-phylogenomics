@@ -10,6 +10,7 @@
 #include "defs.h"
 #include "param.h"
 #include "msg.h"
+#include "parser.h"
 #include "buffer.h"
 #include "levels.h"
 #include "common.h"
@@ -231,31 +232,19 @@ void LoadReference(Threads T, CModel **cModels, FILE *Reader){
   uint32_t  n, k, idxPos;
   uint64_t  nBases = 0;
   int32_t   idx = 0;
-  uint8_t   *readerBuffer, *symbolBuffer, sym, irSym, type = 0, header = 1;
+  uint8_t   *readerBuffer, *symbolBuffer, sym, irSym;
+  PARSER    *PA = CreateParser();
 
   readerBuffer  = (uint8_t *) Calloc(BUFFER_SIZE + 1, sizeof(uint8_t));
   symbolBuffer  = (uint8_t *) Calloc(BUFFER_SIZE + BGUARD + 1, sizeof(uint8_t));
   symbolBuffer += BGUARD;
 
-  sym = fgetc(Reader);
-  switch(sym){ 
-    case '>': type = 1; break;
-    default : type = 0;
-    }
-  rewind(Reader);
+  FileType(PA, Reader);
 
   while((k = fread(readerBuffer, 1, BUFFER_SIZE, Reader)))
     for(idxPos = 0 ; idxPos < k ; ++idxPos){
 
-      sym = readerBuffer[idxPos];
-      if(type == 1){  // IS A FAST[A] FILE
-        if(sym == '>'){ header = 1; continue; }
-        if(sym == '\n' && header == 1){ header = 0; continue; }
-        if(sym == '\n') continue;
-        if(header == 1) continue;
-        }
-
-      if(sym != 'A' && sym != 'C' && sym != 'G' && sym != 'T')
+      if(ParseSym(PA, (sym = readerBuffer[idxPos])) == -1)
         continue;
 
       symbolBuffer[idx] = sym = DNASymToNum(sym);
@@ -281,6 +270,7 @@ void LoadReference(Threads T, CModel **cModels, FILE *Reader){
     ResetCModelIdx(cModels[n]);
   Free(readerBuffer);
   Free(symbolBuffer-BGUARD);
+  RemoveParser(PA);
   }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -300,13 +290,16 @@ void Compress(Threads T){
   fclose(IN);
   for(n = 0 ; n < P->nFiles ; ++n)
     if(T.id != n)
+      ;
       //FilterTarget(T, Models, T.id, n);
 
+/*
   for(n = 0 ; n < P->nFiles ; ++n)
     if(T.id != n){
       //LoadReference(T, Models, IN); //NEW REFERENCE
       //CompressTarget(T, Models, T.id, n);
       }
+*/
  
   for(n = 0 ; n < P->nModels ; ++n)
     FreeCModel(Models[n]);

@@ -11,7 +11,7 @@ SET(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 SET(RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 SET(CMAKE_BUILD_TYPE Release)
 
-add_executable (smash-phylog smash-phylog.c mem.c msg.c common.c buffer.c levels.c context.c defs.h param.h) 
+add_executable (smash-phylog smash-phylog.c mem.c msg.c parser.c common.c buffer.c levels.c context.c defs.h param.h) 
 
 TARGET_LINK_LIBRARIES(smash-phylog
 pthread

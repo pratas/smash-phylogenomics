@@ -10,7 +10,7 @@ CFLAGS = -O3 -Wall $(CPLP)
 LIBS   = -lm -lpthread
 DEPS   = defs.h param.h
 PROGS  = $(BIN)/smash-phylog
-OBJS   = mem.o msg.o common.o buffer.o levels.o context.o 
+OBJS   = mem.o msg.o parser.o common.o buffer.o levels.o context.o 
 #-----------------------------------------------------------------------------
 all:
 	$(MAKE) progs
@@ -21,6 +21,8 @@ mem.o: mem.c mem.h $(DEPS)
 	$(CC) -c $(CFLAGS) mem.c
 msg.o: msg.c msg.h $(DEPS)
 	$(CC) -c $(CFLAGS) msg.c
+parser.o: parser.c parser.h $(DEPS)
+	$(CC) -c $(CFLAGS) parser.c
 buffer.o: buffer.c buffer.h $(DEPS)
 	$(CC) -c $(CFLAGS) buffer.c
 common.o: common.c common.h $(DEPS)
