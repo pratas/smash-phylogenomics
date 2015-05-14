@@ -232,11 +232,45 @@ refNModels, INF *I){
 // - - - - - - - - - - - - - - - - F I L T E R I N G - - - - - - - - - - - - -
 
 void FilterTarget(Threads T){
-  //XXX: REF , TAR , wTAR ?
+  FILE     *Reader  = Fopen(P->files[T.id], "r");
+  // NAME
+  char     *name    = concatenate(P->files[P->ref], concatenate(P->files[T.id], ".sp"));
+  FILE     *Writter = Fopen(name, "w");
+
+  uint32_t n, k, idxPos;
+  PARSER   *PA = CreateParser();
+  CBUF     *symBuf = CreateCBuffer(BUFFER_SIZE, BGUARD);
+  uint8_t  *readBuf = (uint8_t *) Calloc(BUFFER_SIZE, sizeof(uint8_t));
+  uint8_t  sym, irSym;
+
+  FileType(PA, Reader);
+
+  while((k = fread(readBuf, 1, BUFFER_SIZE, Reader)))
+    for(idxPos = 0 ; idxPos < k ; ++idxPos){
+      if(ParseSym(PA, (sym = readBuf[idxPos])) == -1) continue;
+      symBuf->buf[symBuf->idx] = sym = DNASymToNum(sym);
+      for(n = 0 ; n < P->nModels ; ++n){
+        GetPModelIdx(symBuf->buf+symBuf->idx-1, Models[n]);
+
+
+        //UpdateCModelCounter(Models[n], sym, Models[n]->pModelIdx);
+        //if(Models[n]->ir == 1){                         // INVERTED REPEATS
+        //  irSym = GetPModelIdxIR(symBuf->buf+symBuf->idx, Models[n]);
+        //  UpdateCModelCounter(Models[n], irSym, Models[n]->pModelIdxIR);
+        //  }
+        }
+      UpdateCBuffer(symBuf);
+      }
+
+  for(n = 0 ; n < P->nModels ; ++n)
+    ResetCModelIdx(Models[n]);
+  Free(readBuf);
+  RemoveCBuffer(symBuf);
+  RemoveParser(PA);
+  fclose(Reader);
+
 
   P->matrix[P->ref][T.id] = P->ref + T.id;
-
-  return;
   }
 
 
@@ -265,10 +299,8 @@ void LoadReference(Threads T){
 
   while((k = fread(readBuf, 1, BUFFER_SIZE, Reader)))
     for(idxPos = 0 ; idxPos < k ; ++idxPos){
-
       if(ParseSym(PA, (sym = readBuf[idxPos])) == -1) continue;
       symBuf->buf[symBuf->idx] = sym = DNASymToNum(sym);
-
       for(n = 0 ; n < P->nModels ; ++n){
         GetPModelIdx(symBuf->buf+symBuf->idx-1, Models[n]);
         UpdateCModelCounter(Models[n], sym, Models[n]->pModelIdx);
@@ -277,7 +309,6 @@ void LoadReference(Threads T){
           UpdateCModelCounter(Models[n], irSym, Models[n]->pModelIdxIR);
           }
         }
-
       UpdateCBuffer(symBuf);
       }
  
