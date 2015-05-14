@@ -233,6 +233,16 @@ U32 eDen){
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+CModel *CreateShadowModel(void){
+  CModel *M = (CModel *) Calloc(1, sizeof(CModel));
+   
+  
+
+  return M;
+  }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 int32_t BestId(uint32_t *f, uint32_t sum){
   if(sum == 4) return -2; // ZERO COUNTERS
 

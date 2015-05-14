@@ -218,12 +218,17 @@ void FilterTarget(Threads T){
   uint8_t     sym, *pos;
   PModel      **pModel, *MX;
   FloatPModel *PT;
+  CModel      **SHADOW;
 
-//FIXME: CREATE PRIVATE MODELS
+//FIXME: CREATE PRIVATE/SHADOW MODELS
   totModels = P->nModels; // EXTRA MODELS DERIVED FROM EDITS
   for(n = 0 ; n < P->nModels ; ++n) 
     if(T.model[n].edits != 0)
       totModels += 1;
+
+  SHADOW = (CModel **) Calloc(P->nModels, sizeof(CModel *));
+  for(n = 0 ; n < P->nModels ; ++n)
+    SHADOW[n] = CreateShadowModel(); 
 
   pModel        = (PModel  **) Calloc(totModels, sizeof(PModel *));
   for(n = 0 ; n < totModels ; ++n)
