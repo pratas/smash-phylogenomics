@@ -14,7 +14,7 @@
 #include "buffer.h"
 #include "levels.h"
 #include "common.h"
-#include "context.h"
+#include "cmodel.h"
 
 CModel **Models;
 
@@ -390,6 +390,9 @@ void CompressAction(Threads *T, uint32_t ref){
       pthread_join(t[n+1], NULL);
     }
 
+  for(n = 0 ; n < P->nModels ; ++n)
+    FreeCModel(Models[n]);
+
 /*// HERE, WITH THREADING, MEMORY IS QUADRATIC!
   for(n = 0 ; n < P->nFiles ; ++n)
     if(T.id != n){
@@ -397,9 +400,6 @@ void CompressAction(Threads *T, uint32_t ref){
       //CompressTarget(T, Models, T.id, n);
       }
 */
- 
-  for(n = 0 ; n < P->nModels ; ++n)
-    FreeCModel(Models[n]);
   }
 
 

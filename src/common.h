@@ -1,7 +1,7 @@
 #ifndef COMMON_H_INCLUDED
 #define COMMON_H_INCLUDED
 
-#include "context.h"
+#include "cmodel.h"
 #include "defs.h"
 #include "param.h"
 
