@@ -535,6 +535,8 @@ void PrintArgs(Parameters *P, Threads T){
   fprintf(stderr, "Force mode ......................... %s\n", P->force == 0 ? 
   "no" : "yes");
   fprintf(stderr, "Compression level .................. %u\n", P->level);
+  fprintf(stderr, "Threshold .......................... %.2lf\n", P->threshold);
+  fprintf(stderr, "Number of threads .................. %u\n", P->nThreads);
   for(n = 0 ; n < P->nModels ; ++n){
     fprintf(stderr, "Reference model %d:\n", n+1);
     fprintf(stderr, "  [+] Context order ................ %u\n", 

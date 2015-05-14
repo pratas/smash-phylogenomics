@@ -413,7 +413,7 @@ int32_t main(int argc, char *argv[]){
   int32_t     xargc = 0;
   uint32_t    n, k, col, ref;
   clock_t     start = clock();
-  double      gamma;
+  double      gamma, threshold;
   Threads     *T;
   
   P = (Parameters *) Malloc(1 * sizeof(Parameters));
@@ -435,25 +435,9 @@ int32_t main(int argc, char *argv[]){
   P->verbose  = ArgsState  (DEFAULT_VERBOSE, p, argc, "-v" );
   P->force    = ArgsState  (DEFAULT_FORCE,   p, argc, "-f" );
   P->level    = ArgsNum    (0, p, argc, "-l", MIN_LEVEL, MAX_LEVEL);
-  P->nThreads = ArgsNum    (DEFAULT_THREADS, p, argc, "-t", MIN_THREADS, 
+  P->nThreads = ArgsNum    (DEFAULT_THREADS, p, argc, "-n", MIN_THREADS, 
   MAX_THREADS);
 
-  gamma = DEFAULT_GAMMA;
-  for(n = 1 ; n < xargc ; ++n) 
-    if(strcmp(xargv[n], "-g") == 0) 
-      gamma = atof(xargv[n+1]);
-
-  col = MAX_COLLISIONS;
-  for(n = 1 ; n < xargc ; ++n) 
-    if(strcmp(xargv[n], "-c") == 0) 
-      col = atoi(xargv[n+1]);
-
-  P->col      = ArgsNum    (col,   p, argc, "-c", 1, 200);
-  P->gamma    = ArgsDouble (gamma, p, argc, "-g");
-  P->gamma    = ((int)(P->gamma * 65536)) / 65536.0;
-  P->nFiles   = ReadFNames (P, argv[argc-1]);
-
-  P->nModels  = 0;
   for(n = 1 ; n < argc ; ++n)
     if(strcmp(argv[n], "-m") == 0)
       P->nModels += 1;
@@ -461,6 +445,7 @@ int32_t main(int argc, char *argv[]){
   if(P->nModels == 0 && P->level == 0)
     P->level = DEFAULT_LEVEL;
 
+  P->nModels  = 0;
   if(P->level != 0){
     xpl = GetLevels(P->level);
     xargc = StrToArgv(xpl, &xargv);
@@ -468,6 +453,27 @@ int32_t main(int argc, char *argv[]){
       if(strcmp(xargv[n], "-m") == 0)
         P->nModels += 1;
     }
+
+  gamma = DEFAULT_GAMMA;
+  for(n = 1 ; n < xargc ; ++n) 
+    if(strcmp(xargv[n], "-g") == 0) 
+      gamma = atof(xargv[n+1]);
+
+  threshold = DEFAULT_THRESHOLD;
+  for(n = 1 ; n < xargc ; ++n)
+    if(strcmp(xargv[n], "-t") == 0)
+      threshold = atof(xargv[n+1]);
+
+  col = MAX_COLLISIONS;
+  for(n = 1 ; n < xargc ; ++n) 
+    if(strcmp(xargv[n], "-c") == 0) 
+      col = atoi(xargv[n+1]);
+
+  P->col       = ArgsNum    (col,   p, argc, "-c", 1, 200);
+  P->gamma     = ArgsDouble (gamma, p, argc, "-g");
+  P->gamma     = ((int)(P->gamma * 65536)) / 65536.0;
+  P->threshold = ArgsDouble (threshold, p, argc, "-t");
+  P->nFiles    = ReadFNames (P, argv[argc-1]);
 
   if(P->nModels == 0){
     fprintf(stderr, "Error: at least you need to use a context model!\n");

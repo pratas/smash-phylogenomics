@@ -78,8 +78,6 @@ typedef struct{
   // EDITS HANDLING:
   U32        edits;
   Correct    SUBS;
-  Correct    ADDS;
-  Correct    DELS;
   }
 CModel;
 
@@ -97,21 +95,13 @@ FloatPModel;
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 int32_t         BestId               (uint32_t *, uint32_t);
-int32_t         BestId2              (uint32_t *, uint32_t);
 void            HitSUBS              (CModel *);
-void            HitADDS              (CModel *);
-void            HitDELS              (CModel *);
 void            FailSUBS             (CModel *);
-void            FailADDS             (CModel *);
-void            FailDELS             (CModel *);
 void            FreeCModel           (CModel *);
 inline void     GetPModelIdx         (U8 *, CModel *);
 inline U8       GetPModelIdxIR       (U8 *, CModel *);
 inline uint64_t GetPModelIdxCorr     (U8 *, CModel *, uint64_t);
 void            CorrectCModelSUBS    (CModel *, PModel *, uint8_t);
-void            CorrectCModelSUBS2    (CModel *, PModel *, uint8_t);
-void            CorrectCModelADDS    (CModel *, PModel *, uint8_t);
-void            CorrectCModelDELS    (CModel *, PModel *, uint8_t);
 PModel          *CreatePModel        (U32);
 FloatPModel     *CreateFloatPModel   (U32);
 void            ResetCModelIdx       (CModel *);

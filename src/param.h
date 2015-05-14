@@ -24,6 +24,7 @@ typedef struct{
   U8       level;
   U32      col;
   double   gamma;
+  double   threshold;
   U32      nModels;
   U32      nThreads;
   U8       nFiles;

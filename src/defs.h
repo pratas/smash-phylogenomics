@@ -7,13 +7,6 @@
 #include <unistd.h>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// RUNNING OPTIMIZATIONS : MEMORY / SPEED
-
-#define ESTIMATE
-#define PROGRESS
-#define FSEARCHMODE
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // ATTENTION: UNCOMMENT ONLY ONE!!!
 //#define PREC32B // UNCOMMENT: CONTEXTS UP TO 28 (IT WILL USE HIGH MEMORY!)
 #define PREC16B // UNCOMMENT: CONTEXTS UP TO 20 (IT WILL USE MEDIUM MEMORY!)
@@ -29,8 +22,6 @@ typedef int64_t  I64;
 typedef int32_t  I32;
 typedef int16_t  I16;
 typedef int8_t   I8;
-
-U32 garbage;
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -63,6 +54,7 @@ U32 garbage;
 #define CHECKSUMGF             1073741824
 #define WATERMARK              16042014
 #define DEFAULT_GAMMA          0.90
+#define DEFAULT_THRESHOLD      1.85
 #define MAX_HISTORYSIZE        1000000
 #define REFERENCE              1
 #define TARGET                 0
