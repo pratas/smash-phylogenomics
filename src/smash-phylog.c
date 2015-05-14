@@ -20,9 +20,9 @@ CModel **Models;
 
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - C O M P R E S S O R - - - - - - - - - - - - - -
+
+void Compress(Parameters *P, CModel **cModels, uint8_t id){
 /*
-void Compress(Parameters *P, CModel **cModels, uint8_t id, uint32_t 
-refNModels, INF *I){
   FILE        *Reader  = Fopen(P->tar[id], "r");
   char        *name    = concatenate(P->tar[id], ".co");
   FILE        *Writter = Fopen(name, "w");
@@ -34,18 +34,7 @@ refNModels, INF *I){
               header = 1, line = 0, dna = 0;
   PModel      **pModel, *MX;
   FloatPModel *PT;
-  #ifdef PROGRESS
-  uint64_t    i = 0;
-  #endif
 
-  if(P->verbose)
-    fprintf(stdout, "Analyzing data and creating models ...\n");
-
-  FILE *IAE = NULL;
-  char *IAEName = NULL;
-  IAEName = concatenate(P->tar[id], ".iae");
-  IAE = Fopen(IAEName, "w");
-  
   sym = fgetc(Reader);
   switch(sym){
     case '>': type = 1; break;
@@ -96,9 +85,6 @@ refNModels, INF *I){
 
   while((k = fread(readerBuffer, 1, BUFFER_SIZE, Reader)))
     for(idxPos = 0 ; idxPos < k ; ++idxPos){
-      #ifdef PROGRESS
-      CalcProgress(nSymbols, ++i);
-      #endif
 
       sym = readerBuffer[idxPos];
       if(type == 1){  // IS A FAST[A] FILE
@@ -121,13 +107,8 @@ refNModels, INF *I){
       if(sym < 65 || sym > 122) continue; 
 
       // FINAL FILTERING DNA CONTENT
-      if(sym != 'A' && sym != 'C' && sym != 'G' && sym != 'T'){
-        #ifdef ESTIMATE
-        if(P->estim != 0)
-          fprintf(IAE, "0\n");
-        #endif
+      if(sym != 'A' && sym != 'C' && sym != 'G' && sym != 'T')
         continue;
-        }
 
       symbolBuffer[idx] = sym = DNASymToNum(sym);
       memset((void *)PT->freqs, 0, ALPHABET_SIZE * sizeof(double));
@@ -159,7 +140,7 @@ refNModels, INF *I){
       MX->sum += MX->freqs[2] = 1 + (unsigned) (PT->freqs[2] * MX_PMODEL);
       MX->sum += MX->freqs[3] = 1 + (unsigned) (PT->freqs[3] * MX_PMODEL);
 
-      fprintf(IAE, "%.3g\n", 2-(PModelSymbolNats(MX, sym) / M_LN2));
+      //fprintf(IAE, "%.3g\n", 2-(PModelSymbolNats(MX, sym) / M_LN2));
 
       cModelTotalWeight = 0;
       for(n = 0 ; n < totModels ; ++n){
@@ -198,8 +179,6 @@ refNModels, INF *I){
       }
 
   fclose(Writter);
-  fclose(IAE);
-  Free(IAEName);
 
   Free(MX);
   Free(name);
@@ -218,30 +197,43 @@ refNModels, INF *I){
   Free(readerBuffer);
   Free(symbolBuffer-BGUARD);
   fclose(Reader);
-
-  if(P->verbose == 1)
-    fprintf(stdout, "Done!                          \n");  // SPACES ARE VALID 
-
-  I[id].bytes = 2222222;
-  I[id].size  = compressed;
-  }
 */
+  //P->matrix[P->ref][T.id] = P->ref + T.id;
+  }
 
 
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - - - F I L T E R I N G - - - - - - - - - - - - -
 
 void FilterTarget(Threads T){
-  FILE     *Reader  = Fopen(P->files[T.id], "r");
-  // NAME
-  char     *name    = concatenate(P->files[P->ref], concatenate(P->files[T.id], ".sp"));
-  FILE     *Writter = Fopen(name, "w");
+  FILE        *Reader  = Fopen(P->files[T.id], "r");
+  char        *name    = concatenate(P->files[P->ref], 
+              concatenate(P->files[T.id], ".sp"));
+  FILE        *Writter = Fopen(name, "w");
+  double      *cModelWeight, cModelTotalWeight = 0;
+  uint32_t    n, k, idxPos, totModels, cModel;
+  PARSER      *PA = CreateParser();
+  CBUF        *symBuf = CreateCBuffer(BUFFER_SIZE, BGUARD);
+  uint8_t     *readBuf = (uint8_t *) Calloc(BUFFER_SIZE, sizeof(uint8_t));
+  uint8_t     sym, *pos;
+  PModel      **pModel, *MX;
+  FloatPModel *PT;
 
-  uint32_t n, k, idxPos;
-  PARSER   *PA = CreateParser();
-  CBUF     *symBuf = CreateCBuffer(BUFFER_SIZE, BGUARD);
-  uint8_t  *readBuf = (uint8_t *) Calloc(BUFFER_SIZE, sizeof(uint8_t));
-  uint8_t  sym, irSym;
+//FIXME: CREATE PRIVATE MODELS
+  totModels = P->nModels; // EXTRA MODELS DERIVED FROM EDITS
+  for(n = 0 ; n < P->nModels ; ++n) 
+    if(T.model[n].edits != 0)
+      totModels += 1;
+
+  pModel        = (PModel  **) Calloc(totModels, sizeof(PModel *));
+  for(n = 0 ; n < totModels ; ++n)
+    pModel[n]   = CreatePModel(ALPHABET_SIZE);
+  MX            = CreatePModel(ALPHABET_SIZE);
+  PT            = CreateFloatPModel(ALPHABET_SIZE);
+  cModelWeight  = (double   *) Calloc(totModels, sizeof(double));
+
+  for(n = 0 ; n < totModels ; ++n)
+    cModelWeight[n] = 1.0 / totModels;
 
   FileType(PA, Reader);
 
@@ -249,28 +241,73 @@ void FilterTarget(Threads T){
     for(idxPos = 0 ; idxPos < k ; ++idxPos){
       if(ParseSym(PA, (sym = readBuf[idxPos])) == -1) continue;
       symBuf->buf[symBuf->idx] = sym = DNASymToNum(sym);
-      for(n = 0 ; n < P->nModels ; ++n){
-        GetPModelIdx(symBuf->buf+symBuf->idx-1, Models[n]);
 
+      n = 0;
+      pos = &symBuf->buf[symBuf->idx-1];
+      for(cModel = 0 ; cModel < P->nModels ; ++cModel){
+        GetPModelIdx(pos, Models[cModel]);
+        ComputePModel(Models[cModel], pModel[n], Models[cModel]->pModelIdx,
+        Models[cModel]->alphaDen);
+        ComputeWeightedFreqs(cModelWeight[n], pModel[n], PT);
 
-        //UpdateCModelCounter(Models[n], sym, Models[n]->pModelIdx);
-        //if(Models[n]->ir == 1){                         // INVERTED REPEATS
-        //  irSym = GetPModelIdxIR(symBuf->buf+symBuf->idx, Models[n]);
-        //  UpdateCModelCounter(Models[n], irSym, Models[n]->pModelIdxIR);
-        //  }
+        if(Models[cModel]->edits != 0){
+          ++n;
+          Models[cModel]->SUBS.seq->buf[Models[cModel]->SUBS.seq->idx] = sym;
+          Models[cModel]->SUBS.idx = GetPModelIdxCorr(Models[cModel]->SUBS.
+          seq->buf+Models[cModel]->SUBS.seq->idx-1, Models[cModel], Models
+          [cModel]->SUBS.idx);
+          ComputePModel(Models[cModel], pModel[n], Models[cModel]->SUBS.idx, 
+          Models[cModel]->SUBS.eDen);
+          ComputeWeightedFreqs(cModelWeight[n], pModel[n], PT);
+          }
+
+        ++n;
         }
+
+      MX->sum  = MX->freqs[0] = 1 + (unsigned) (PT->freqs[0] * MX_PMODEL);
+      MX->sum += MX->freqs[1] = 1 + (unsigned) (PT->freqs[1] * MX_PMODEL);
+      MX->sum += MX->freqs[2] = 1 + (unsigned) (PT->freqs[2] * MX_PMODEL);
+      MX->sum += MX->freqs[3] = 1 + (unsigned) (PT->freqs[3] * MX_PMODEL);
+
+      fprintf(Writter, "%.3g\n", 2-(PModelSymbolNats(MX, sym) / M_LN2));
+
+      cModelTotalWeight = 0;
+      for(n = 0 ; n < totModels ; ++n){
+        cModelWeight[n] = Power(cModelWeight[n], P->gamma) * (double) 
+        pModel[n]->freqs[sym] / pModel[n]->sum;
+        cModelTotalWeight += cModelWeight[n];
+        }
+
+      for(n = 0 ; n < totModels ; ++n)
+        cModelWeight[n] /= cModelTotalWeight; // RENORMALIZE THE WEIGHTS
+
+      n = 0;
+      for(cModel = 0 ; cModel < P->nModels ; ++cModel){
+        if(Models[cModel]->edits != 0){
+          CorrectCModelSUBS(Models[cModel], pModel[++n], sym);
+          }
+        ++n;
+        }
+
       UpdateCBuffer(symBuf);
       }
 
+  Free(MX);
+  Free(name);
+  Free(cModelWeight);
+  for(n = 0 ; n < totModels ; ++n){
+    Free(pModel[n]->freqs);
+    Free(pModel[n]);
+    }
+  Free(pModel);
+  Free(PT);
   for(n = 0 ; n < P->nModels ; ++n)
     ResetCModelIdx(Models[n]);
   Free(readBuf);
   RemoveCBuffer(symBuf);
   RemoveParser(PA);
+  fclose(Writter);
   fclose(Reader);
-
-
-  P->matrix[P->ref][T.id] = P->ref + T.id;
   }
 
 
