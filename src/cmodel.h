@@ -4,7 +4,6 @@
 #include "defs.h"
 #include "buffer.h"
 
-#define WINDOW_SIZE           6    // IT WILL ACCEPT X SUBSTITUTIONS IN 6
 #define ARRAY_MODE            0
 #define HASH_TABLE_MODE       1
 #define HASH_TABLE_BEGIN_CTX  15
@@ -111,7 +110,7 @@ CModel          *CreateCModel        (U32, U32, U32, U8, U32, U32, U32);
 CModel          *CreateShadowModel   (CModel *);
 inline void     ComputePModel        (CModel *, PModel *, uint64_t, uint32_t);
 inline void     ComputeWeightedFreqs (double, PModel *, FloatPModel *);
-double          PModelSymbolNats     (PModel *, U32);
+double          PModelSymbolLog      (PModel *, U32);
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

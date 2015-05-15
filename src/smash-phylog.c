@@ -246,6 +246,8 @@ void FilterTarget(Threads T){
       if(ParseSym(PA, (sym = readBuf[idxPos])) == -1) continue;
       symBuf->buf[symBuf->idx] = sym = DNASymToNum(sym);
 
+      memset((void *)PT->freqs, 0, ALPHABET_SIZE * sizeof(double));
+
       n = 0;
       pos = &symBuf->buf[symBuf->idx-1];
       for(cModel = 0 ; cModel < P->nModels ; ++cModel){
@@ -268,12 +270,15 @@ void FilterTarget(Threads T){
         ++n;
         }
 
-      MX->sum  = MX->freqs[0] = 1 + (unsigned) (PT->freqs[0] * MX_PMODEL);
-      MX->sum += MX->freqs[1] = 1 + (unsigned) (PT->freqs[1] * MX_PMODEL);
-      MX->sum += MX->freqs[2] = 1 + (unsigned) (PT->freqs[2] * MX_PMODEL);
-      MX->sum += MX->freqs[3] = 1 + (unsigned) (PT->freqs[3] * MX_PMODEL);
+      MX->sum  = (MX->freqs[0] = 1 + (unsigned) (PT->freqs[0] * MX_PMODEL));
+      MX->sum += (MX->freqs[1] = 1 + (unsigned) (PT->freqs[1] * MX_PMODEL));
+      MX->sum += (MX->freqs[2] = 1 + (unsigned) (PT->freqs[2] * MX_PMODEL));
+      MX->sum += (MX->freqs[3] = 1 + (unsigned) (PT->freqs[3] * MX_PMODEL));
 
-      fprintf(Writter, "%.3g\n", 2-(PModelSymbolNats(MX, sym) / M_LN2));
+      fprintf(Writter, "%.3g\n", PModelSymbolLog(MX, sym));
+
+//      float xxx[1]; xxx[0] = (float) PModelSymbolLog(MX, sym);
+//      fwrite(xxx, sizeof(float), 1, Writter);
 
       cModelTotalWeight = 0;
       for(n = 0 ; n < totModels ; ++n){
@@ -370,6 +375,7 @@ void LoadReference(Threads T){
 void CompressAction(Threads *T, uint32_t ref){
   uint32_t n;
   pthread_t t[P->nThreads];
+  P->ref = ref;
 
   Models = (CModel **) Malloc(P->nModels * sizeof(CModel *));
   for(n = 0 ; n < P->nModels ; ++n)
@@ -381,8 +387,6 @@ void CompressAction(Threads *T, uint32_t ref){
   LoadReference(T[ref]);
   fprintf(stderr, "Done!\n");
   
-  P->ref = ref;
-
   fprintf(stderr, "  [+] Filtering %u targets ... ", P->nFiles);
   ref = 0;
   do{
@@ -449,6 +453,7 @@ int32_t main(int argc, char *argv[]){
   P->nThreads = ArgsNum    (DEFAULT_THREADS, p, argc, "-n", MIN_THREADS, 
   MAX_THREADS);
 
+  P->nModels = 0;
   for(n = 1 ; n < argc ; ++n)
     if(strcmp(argv[n], "-m") == 0)
       P->nModels += 1;
