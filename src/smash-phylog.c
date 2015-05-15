@@ -310,10 +310,8 @@ void FilterTarget(Threads T){
     }
   Free(pModel);
   Free(PT);
-  for(n = 0 ; n < P->nModels ; ++n){
-    //ResetCModelIdx(Models[n]);
+  for(n = 0 ; n < P->nModels ; ++n)
     FreeShadow(Shadow[n]);
-    }
   Free(readBuf);
   RemoveCBuffer(symBuf);
   RemoveParser(PA);
