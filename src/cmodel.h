@@ -98,6 +98,7 @@ int32_t         BestId               (uint32_t *, uint32_t);
 void            HitSUBS              (CModel *);
 void            FailSUBS             (CModel *);
 void            FreeCModel           (CModel *);
+void            FreeShadow           (CModel *);
 inline void     GetPModelIdx         (U8 *, CModel *);
 inline U8       GetPModelIdxIR       (U8 *, CModel *);
 inline uint64_t GetPModelIdxCorr     (U8 *, CModel *, uint64_t);

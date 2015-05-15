@@ -37,6 +37,20 @@ void FreeCModel(CModel *M){
     }
   else // TABLE_MODE
     Free(M->array.counters);
+  if(M->edits != 0){
+    Free(M->SUBS.mask);
+    Free(M->SUBS.seq);
+    }
+  Free(M);
+  }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+void FreeShadow(CModel *M){
+  if(M->edits != 0){
+    Free(M->SUBS.mask);
+    Free(M->SUBS.seq);
+    }
   Free(M);
   }
 

@@ -256,12 +256,12 @@ void FilterTarget(Threads T){
 
         if(Shadow[cModel]->edits != 0){
           ++n;
-          Models[cModel]->SUBS.seq->buf[Models[cModel]->SUBS.seq->idx] = sym;
-          Models[cModel]->SUBS.idx = GetPModelIdxCorr(Models[cModel]->SUBS.
-          seq->buf+Models[cModel]->SUBS.seq->idx-1, Models[cModel], Models
+          Shadow[cModel]->SUBS.seq->buf[Shadow[cModel]->SUBS.seq->idx] = sym;
+          Shadow[cModel]->SUBS.idx = GetPModelIdxCorr(Shadow[cModel]->SUBS.
+          seq->buf+Shadow[cModel]->SUBS.seq->idx-1, Shadow[cModel], Shadow
           [cModel]->SUBS.idx);
-          ComputePModel(Models[cModel], pModel[n], Models[cModel]->SUBS.idx, 
-          Models[cModel]->SUBS.eDen);
+          ComputePModel(Models[cModel], pModel[n], Shadow[cModel]->SUBS.idx, 
+          Shadow[cModel]->SUBS.eDen);
           ComputeWeightedFreqs(cModelWeight[n], pModel[n], PT);
           }
 
@@ -288,7 +288,7 @@ void FilterTarget(Threads T){
       n = 0;
       for(cModel = 0 ; cModel < P->nModels ; ++cModel){
         if(Shadow[cModel]->edits != 0){
-          CorrectCModelSUBS(Models[cModel], pModel[++n], sym); //XXX
+          CorrectCModelSUBS(Shadow[cModel], pModel[++n], sym);
           }
         ++n;
         }
@@ -306,8 +306,8 @@ void FilterTarget(Threads T){
   Free(pModel);
   Free(PT);
   for(n = 0 ; n < P->nModels ; ++n){
-    ResetCModelIdx(Models[n]);
-    FreeCModel(Shadow[n]); //XXX
+    //ResetCModelIdx(Models[n]);
+    FreeShadow(Shadow[n]);
     }
   Free(readBuf);
   RemoveCBuffer(symBuf);
@@ -377,9 +377,13 @@ void CompressAction(Threads *T, uint32_t ref){
     T[ref].model[n].ir, REFERENCE, P->col, T[ref].model[n].edits, 
     T[ref].model[n].eDen);
 
+  fprintf(stderr, "Loading reference %u ... ", ref+1);
   LoadReference(T[ref]);
+  fprintf(stderr, "Done!\n");
+  
   P->ref = ref;
 
+  fprintf(stderr, "  [+] Filtering %u targets ... ", P->nFiles);
   ref = 0;
   do{
     for(n = 0 ; n < P->nThreads ; ++n)
@@ -395,6 +399,7 @@ void CompressAction(Threads *T, uint32_t ref){
     for(n = ref ; n < P->nFiles ; ++n) // DO NOT JOIN FORS!
       pthread_join(t[n+1], NULL);
     }
+  fprintf(stderr, "Done!\n");
 
   for(n = 0 ; n < P->nModels ; ++n)
     FreeCModel(Models[n]);
@@ -516,11 +521,8 @@ int32_t main(int argc, char *argv[]){
     exit(1);
     }
 
-  for(n = 0 ; n < P->nFiles ; ++n){
-    fprintf(stderr, "Running reference %u ...\n", n+1);
+  for(n = 0 ; n < P->nFiles ; ++n)
     CompressAction(T, n);
-    fprintf(stderr, "Done!\n");
-    }
 
   fprintf(stdout, "Final matrix:\n");
   for(n = 0 ; n < P->nFiles ; ++n){
