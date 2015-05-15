@@ -15,6 +15,7 @@
 #include "levels.h"
 #include "common.h"
 #include "cmodel.h"
+#include "filters.h"
 
 CModel **Models;
 
@@ -219,6 +220,7 @@ void FilterTarget(Threads T){
   PModel      **pModel, *MX;
   FloatPModel *PT;
   CModel      **Shadow;
+  FILTER      *Filter;
 
   totModels = P->nModels; // EXTRA MODELS DERIVED FROM EDITS
   for(n = 0 ; n < P->nModels ; ++n) 
@@ -234,6 +236,7 @@ void FilterTarget(Threads T){
     pModel[n]   = CreatePModel(ALPHABET_SIZE);
   MX            = CreatePModel(ALPHABET_SIZE);
   PT            = CreateFloatPModel(ALPHABET_SIZE);
+  Filter        = CreateFilter(10000);
   cModelWeight  = (double   *) Calloc(totModels, sizeof(double));
 
   for(n = 0 ; n < totModels ; ++n)
