@@ -218,17 +218,16 @@ void FilterTarget(Threads T){
   uint8_t     sym, *pos;
   PModel      **pModel, *MX;
   FloatPModel *PT;
-  CModel      **SHADOW;
+  CModel      **Shadow;
 
-//FIXME: CREATE PRIVATE/SHADOW MODELS
   totModels = P->nModels; // EXTRA MODELS DERIVED FROM EDITS
   for(n = 0 ; n < P->nModels ; ++n) 
     if(T.model[n].edits != 0)
       totModels += 1;
 
-  SHADOW = (CModel **) Calloc(P->nModels, sizeof(CModel *));
+  Shadow = (CModel **) Calloc(P->nModels, sizeof(CModel *));
   for(n = 0 ; n < P->nModels ; ++n)
-    SHADOW[n] = CreateShadowModel(); 
+    Shadow[n] = CreateShadowModel(Models[n]); 
 
   pModel        = (PModel  **) Calloc(totModels, sizeof(PModel *));
   for(n = 0 ; n < totModels ; ++n)
@@ -250,12 +249,12 @@ void FilterTarget(Threads T){
       n = 0;
       pos = &symBuf->buf[symBuf->idx-1];
       for(cModel = 0 ; cModel < P->nModels ; ++cModel){
-        GetPModelIdx(pos, Models[cModel]);
-        ComputePModel(Models[cModel], pModel[n], Models[cModel]->pModelIdx,
-        Models[cModel]->alphaDen);
+        GetPModelIdx(pos, Shadow[cModel]);
+        ComputePModel(Models[cModel], pModel[n], Shadow[cModel]->pModelIdx,
+        Shadow[cModel]->alphaDen);
         ComputeWeightedFreqs(cModelWeight[n], pModel[n], PT);
 
-        if(Models[cModel]->edits != 0){
+        if(Shadow[cModel]->edits != 0){
           ++n;
           Models[cModel]->SUBS.seq->buf[Models[cModel]->SUBS.seq->idx] = sym;
           Models[cModel]->SUBS.idx = GetPModelIdxCorr(Models[cModel]->SUBS.
@@ -288,8 +287,8 @@ void FilterTarget(Threads T){
 
       n = 0;
       for(cModel = 0 ; cModel < P->nModels ; ++cModel){
-        if(Models[cModel]->edits != 0){
-          CorrectCModelSUBS(Models[cModel], pModel[++n], sym);
+        if(Shadow[cModel]->edits != 0){
+          CorrectCModelSUBS(Models[cModel], pModel[++n], sym); //XXX
           }
         ++n;
         }
@@ -306,8 +305,10 @@ void FilterTarget(Threads T){
     }
   Free(pModel);
   Free(PT);
-  for(n = 0 ; n < P->nModels ; ++n)
+  for(n = 0 ; n < P->nModels ; ++n){
     ResetCModelIdx(Models[n]);
+    FreeCModel(Shadow[n]); //XXX
+    }
   Free(readBuf);
   RemoveCBuffer(symBuf);
   RemoveParser(PA);

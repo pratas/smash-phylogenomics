@@ -233,10 +233,29 @@ U32 eDen){
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-CModel *CreateShadowModel(void){
+CModel *CreateShadowModel(CModel *XP){
   CModel *M = (CModel *) Calloc(1, sizeof(CModel));
    
-  
+  M->nPModels    = XP->nPModels;
+  M->ctx         = XP->ctx;
+  M->alphaDen    = XP->alphaDen;
+  M->edits       = XP->edits;
+  M->pModelIdx   = XP->pModelIdx;
+  M->pModelIdxIR = XP->pModelIdxIR;
+  M->ir          = XP->ir;
+  M->ref         = XP->ref;
+  M->mode        = XP->mode;
+  M->maxCount    = XP->maxCount;
+  M->multiplier  = XP->multiplier;
+
+  if(M->edits != 0){
+    M->SUBS.seq       = CreateCBuffer(BUFFER_SIZE, BGUARD);
+    M->SUBS.in        = XP->SUBS.in;
+    M->SUBS.idx       = XP->SUBS.idx;
+    M->SUBS.mask      = (uint8_t *) Calloc(BGUARD, sizeof(uint8_t));
+    M->SUBS.threshold = XP->SUBS.threshold;
+    M->SUBS.eDen      = XP->SUBS.eDen;
+    }
 
   return M;
   }
