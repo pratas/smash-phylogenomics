@@ -12,12 +12,14 @@
 
 FILTER *CreateFilter(uint32_t size){
   FILTER *F = (FILTER *) Calloc(1, sizeof(FILTER));
-  F->type  = 0;
-  F->size  = size;
-  F->guard = size >> 1;
-  F->buf   = (double  *) Calloc(F->size+F->guard, sizeof(double));
-  F->bases = (uint8_t *) Calloc(F->size+F->guard, sizeof(uint8_t));
-  F->idx   = 0;
+  F->type   = 0;
+  F->size   = size;
+  F->guard  = size >> 1;
+  F->buf    = (double  *) Calloc(F->size+F->guard, sizeof(double));
+  F->bases  = (uint8_t *) Calloc(F->size+F->guard, sizeof(uint8_t));
+  F->buf   += F->guard;
+  F->bases += F->guard;
+  F->idx    = 0;
   return F;
   }
 
@@ -42,8 +44,8 @@ void InsertFilter(FILTER *F, double value, uint8_t base){
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 void RemoveFilter(FILTER *F){
-  Free(F->buf);
-  Free(F->bases);
+  Free(F->buf   - F->guard);
+  Free(F->bases - F->guard);
   Free(F);
   }
 

@@ -316,6 +316,7 @@ void FilterTarget(Threads T){
   Free(readBuf);
   RemoveCBuffer(symBuf);
   RemoveParser(PA);
+  RemoveFilter(Filter);
   fclose(Writter);
   fclose(Reader);
   }
