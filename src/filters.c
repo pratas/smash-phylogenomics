@@ -64,9 +64,32 @@ void UpdateFilter(FILTER *F){
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-void InsertFilter(FILTER *F, double value, uint8_t base){
+void InsertInFilter(FILTER *F, double value, uint8_t base){
   F->buf  [F->idx] = value;
   F->bases[F->idx] = base;
+  }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+void FilterSequence(FILTER *F, FILE *W, uint64_t pos){
+  if(pos > F->guard){
+   
+    int64_t n; 
+    for(n = 0 ; n < pos ; ++n){
+      int64_t k, s;
+      double sum = 0, wSum = 0, tmp, final;
+
+      for(k = -F->M ; k <= F->M ; ++k){
+        s = n+k;
+        if(s >= 0 && s < pos){
+          sum  += (tmp=F->w[F->M+k])*F->buf[s];
+          wSum += tmp;
+          }
+        }
+      final = sum/wSum;
+      }
+    
+    } 
   }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -80,16 +103,6 @@ void RemoveFilter(FILTER *F){
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-/*
-void WindowSizeAndDrop(Param *P, uint64_t size){
-  if(DEFAULT_WINDOW != -1) return;  
-  P->subsamp = size / DEFAULT_SAMPLE_RATIO;
-  if(size < DEFAULT_SAMPLE_RATIO)
-    P->subsamp = 1;
-  P->window = (P->subsamp-1) * SUBSAMPLE_RATIO;
-  }
-*/
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*
 static float Mean(float *ent, int64_t nEnt, int64_t n, int64_t M, float *w){
   int64_t k, s;

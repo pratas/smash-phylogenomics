@@ -25,7 +25,8 @@ FILTER;
 //void     WindowSizeAndDrop  (Param *, uint64_t);
 FILTER   *CreateFilter      (uint32_t);
 void     UpdateFilter       (FILTER *);
-void     InsertFilter       (FILTER *, double, uint8_t);
+void     InsertInFilter     (FILTER *, double, uint8_t);
+void     FilterSequence     (FILTER *, FILE *, uint64_t);
 void     RemoveFilter       (FILTER *);
 //void     FilterSequence     (char *, Param *, float *);
 

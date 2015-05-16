@@ -212,6 +212,7 @@ void FilterTarget(Threads T){
               concatenate(P->files[T.id], ".sp"));
   FILE        *Writter = Fopen(name, "w");
   double      *cModelWeight, cModelTotalWeight = 0;
+  uint64_t    nBase = 0;
   uint32_t    n, k, idxPos, totModels, cModel;
   PARSER      *PA = CreateParser();
   CBUF        *symBuf = CreateCBuffer(BUFFER_SIZE, BGUARD);
@@ -244,6 +245,7 @@ void FilterTarget(Threads T){
 
   FileType(PA, Reader);
 
+  nBase = 0;
   while((k = fread(readBuf, 1, BUFFER_SIZE, Reader)))
     for(idxPos = 0 ; idxPos < k ; ++idxPos){
       if(ParseSym(PA, (sym = readBuf[idxPos])) == -1) continue;
@@ -278,7 +280,8 @@ void FilterTarget(Threads T){
       MX->sum += (MX->freqs[2] = 1 + (unsigned) (PT->freqs[2] * MX_PMODEL));
       MX->sum += (MX->freqs[3] = 1 + (unsigned) (PT->freqs[3] * MX_PMODEL));
 
-      InsertFilter(Filter, PModelSymbolLog(MX, sym), sym);
+      InsertInFilter(Filter, PModelSymbolLog(MX, sym), sym);
+      FilterSequence(Filter, Writter, nBase);
 
       cModelTotalWeight = 0;
       for(n = 0 ; n < totModels ; ++n){
@@ -300,6 +303,7 @@ void FilterTarget(Threads T){
 
       UpdateCBuffer(symBuf);
       UpdateFilter(Filter);
+      ++nBase;
       }
 
   Free(MX);
