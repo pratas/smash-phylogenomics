@@ -17,12 +17,13 @@ typedef struct{
   uint8_t   *bases;
   uint32_t  idx;
   uint32_t  guard;
+  double    limit;
   }
 FILTER;
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-FILTER   *CreateFilter      (uint32_t);
+FILTER   *CreateFilter      (uint32_t, double);
 void     UpdateFilter       (FILTER *);
 void     InsertInFilter     (FILTER *, double, uint8_t);
 void     FilterSequence     (FILTER *, FILE *, uint64_t);

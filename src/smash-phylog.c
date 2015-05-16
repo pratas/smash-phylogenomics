@@ -237,7 +237,7 @@ void FilterTarget(Threads T){
     pModel[n]   = CreatePModel(ALPHABET_SIZE);
   MX            = CreatePModel(ALPHABET_SIZE);
   PT            = CreateFloatPModel(ALPHABET_SIZE);
-  Filter        = CreateFilter(10000);
+  Filter        = CreateFilter(10000, P->threshold);
   cModelWeight  = (double   *) Calloc(totModels, sizeof(double));
 
   for(n = 0 ; n < totModels ; ++n)

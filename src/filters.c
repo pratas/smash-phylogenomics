@@ -36,7 +36,7 @@ static void InitWinWeights(FILTER *F){
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-FILTER *CreateFilter(uint32_t size){
+FILTER *CreateFilter(uint32_t size, double threshold){
   FILTER *F = (FILTER *) Calloc(1, sizeof(FILTER));
   F->type   = 0;
   F->size   = size<<1;
@@ -47,6 +47,7 @@ FILTER *CreateFilter(uint32_t size){
   F->bases += F->guard;
   F->idx    = 0;
   F->M      = (int64_t) F->guard;
+  F->limit  = threshold;
   InitWinWeights(F);
   return F;
   }
@@ -75,9 +76,9 @@ void FilterSequence(FILTER *F, FILE *W, uint64_t pos){
   if(pos > F->guard){
    
     int64_t n; 
-    for(n = 0 ; n < pos ; ++n){
+//  for(n = 0 ; n < pos ; ++n){
       int64_t k, s;
-      double sum = 0, wSum = 0, tmp, final;
+      double sum = 0, wSum = 0, tmp;
 
       for(k = -F->M ; k <= F->M ; ++k){
         s = n+k;
@@ -86,9 +87,11 @@ void FilterSequence(FILTER *F, FILE *W, uint64_t pos){
           wSum += tmp;
           }
         }
-      final = sum/wSum;
-      }
-    
+
+      if(sum/wSum < F->limit){
+        fprintf(W, "%c", NumToDNASym(F->bases[pos]));
+        }
+//    }
     } 
   }
 
