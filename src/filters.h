@@ -12,9 +12,9 @@ typedef struct{
   uint8_t   type;
   uint32_t  size;
   double    *buf;
-  uint32_t  idx;
-  uint32_t  pos;
   uint8_t   *bases;
+  uint32_t  idx;
+  uint32_t  guard;
   }
 FILTER;
 
@@ -22,6 +22,9 @@ FILTER;
 
 //void     WindowSizeAndDrop  (Param *, uint64_t);
 FILTER   *CreateFilter      (uint32_t);
+void     UpdateFilter       (FILTER *);
+void     InsertFilter       (FILTER *, double, uint8_t);
+void     RemoveFilter       (FILTER *);
 float    *InitWinWeights    (int64_t, int32_t);
 void     EndWinWeights      (float *);
 //void     FilterSequence     (char *, Param *, float *);

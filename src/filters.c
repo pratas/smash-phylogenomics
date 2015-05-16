@@ -12,11 +12,42 @@
 
 FILTER *CreateFilter(uint32_t size){
   FILTER *F = (FILTER *) Calloc(1, sizeof(FILTER));
-  F->size = size;
-
+  F->type  = 0;
+  F->size  = size;
+  F->guard = size >> 1;
+  F->buf   = (double  *) Calloc(F->size+F->guard, sizeof(double));
+  F->bases = (uint8_t *) Calloc(F->size+F->guard, sizeof(uint8_t));
+  F->idx   = 0;
   return F;
   }
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+void UpdateFilter(FILTER *F){
+  F->idx++;
+  if(F->idx == F->size){
+    memcpy(F->buf  -F->guard, F->buf  +F->idx-F->guard, F->guard);
+    memcpy(F->bases-F->guard, F->bases+F->idx-F->guard, F->guard);
+    F->idx = 0;
+    }
+  }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+void InsertFilter(FILTER *F, double value, uint8_t base){
+  F->buf  [F->idx] = value;
+  F->bases[F->idx] = base;
+  }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+void RemoveFilter(FILTER *F){
+  Free(F->buf);
+  Free(F->bases);
+  Free(F);
+  }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /*
 void WindowSizeAndDrop(Param *P, uint64_t size){

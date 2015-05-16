@@ -278,10 +278,7 @@ void FilterTarget(Threads T){
       MX->sum += (MX->freqs[2] = 1 + (unsigned) (PT->freqs[2] * MX_PMODEL));
       MX->sum += (MX->freqs[3] = 1 + (unsigned) (PT->freqs[3] * MX_PMODEL));
 
-      fprintf(Writter, "%.3g\n", PModelSymbolLog(MX, sym));
-
-//      float xxx[1]; xxx[0] = (float) PModelSymbolLog(MX, sym);
-//      fwrite(xxx, sizeof(float), 1, Writter);
+      InsertFilter(Filter, PModelSymbolLog(MX, sym), sym);
 
       cModelTotalWeight = 0;
       for(n = 0 ; n < totModels ; ++n){
@@ -302,6 +299,7 @@ void FilterTarget(Threads T){
         }
 
       UpdateCBuffer(symBuf);
+      UpdateFilter(Filter);
       }
 
   Free(MX);
