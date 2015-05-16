@@ -10,16 +10,44 @@
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+static void InitWinWeights(FILTER *F){
+  F->w = (double *) Malloc((2*F->M+1) * sizeof(double));
+  int64_t k;
+  switch(F->type){
+    case W_HAMMING: 
+      for(k = -F->M ; k <= F->M ; ++k) 
+        F->w[F->M+k] = 0.54+0.46*cos((2*M_PI*k)/(2*F->M+1)); 
+    break;
+    case W_HANN: 
+      for(k = -F->M ; k <= F->M ; ++k) 
+        F->w[F->M+k] = 0.5*(1+cos((2*M_PI*k)/(2*F->M+1))); 
+    break;
+    case W_BLACKMAN: 
+      for(k = -F->M ; k <= F->M ; ++k) 
+        F->w[F->M+k] = 0.42+0.5*cos((2*M_PI*k)/(2*F->M+1))+0.08*cos((4*M_PI*k)/
+        (2*F->M+1));
+    break;
+    case W_RECTANGULAR: 
+      for(k = -F->M ; k <= F->M ; ++k) 
+        F->w[F->M+k] = 1;
+    break;
+    }
+  }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 FILTER *CreateFilter(uint32_t size){
   FILTER *F = (FILTER *) Calloc(1, sizeof(FILTER));
   F->type   = 0;
-  F->size   = size;
-  F->guard  = size >> 1;
+  F->size   = size<<1;
+  F->guard  = size;
   F->buf    = (double  *) Calloc(F->size+F->guard, sizeof(double));
   F->bases  = (uint8_t *) Calloc(F->size+F->guard, sizeof(uint8_t));
   F->buf   += F->guard;
   F->bases += F->guard;
   F->idx    = 0;
+  F->M      = (int64_t) F->guard;
+  InitWinWeights(F);
   return F;
   }
 
@@ -46,6 +74,7 @@ void InsertFilter(FILTER *F, double value, uint8_t base){
 void RemoveFilter(FILTER *F){
   Free(F->buf   - F->guard);
   Free(F->bases - F->guard);
+  Free(F->w);
   Free(F);
   }
 
@@ -60,31 +89,6 @@ void WindowSizeAndDrop(Param *P, uint64_t size){
   P->window = (P->subsamp-1) * SUBSAMPLE_RATIO;
   }
 */
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-float *InitWinWeights(int64_t M, int32_t type){
-  float  *w = (float *) Malloc((2 * M + 1) * sizeof(float));
-  int64_t k;
-
-  switch(type){
-    case W_HAMMING: for(k = -M ; k <= M ; ++k) w[M+k] = 0.54 + 0.46 * cos((2 *
-    M_PI * k) / (2 * M + 1)); break;
-    case W_HANN: for(k = -M ; k <= M ; ++k) w[M+k] = 0.5 * (1 + cos((2 * M_PI
-    * k) / (2 * M + 1))); break;
-    case W_BLACKMAN: for(k = -M ; k <= M ; ++k) w[M+k] = 0.42 + 0.5 * cos((2 *
-    M_PI * k) / (2 * M + 1)) + 0.08 * cos((4 * M_PI * k) / (2 * M+1)); break;
-    case W_RECTANGULAR: for(k = -M ; k <= M ; ++k) w[M+k] = 1; break;
-    }
-
-  return w;
-  }
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-void EndWinWeights(float *w){
-  Free(w);
-  }
-
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*
 static float Mean(float *ent, int64_t nEnt, int64_t n, int64_t M, float *w){

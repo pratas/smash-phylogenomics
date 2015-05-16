@@ -11,6 +11,8 @@
 typedef struct{
   uint8_t   type;
   uint32_t  size;
+  double    *w;
+  int64_t   M;
   double    *buf;
   uint8_t   *bases;
   uint32_t  idx;
@@ -25,8 +27,6 @@ FILTER   *CreateFilter      (uint32_t);
 void     UpdateFilter       (FILTER *);
 void     InsertFilter       (FILTER *, double, uint8_t);
 void     RemoveFilter       (FILTER *);
-float    *InitWinWeights    (int64_t, int32_t);
-void     EndWinWeights      (float *);
 //void     FilterSequence     (char *, Param *, float *);
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
