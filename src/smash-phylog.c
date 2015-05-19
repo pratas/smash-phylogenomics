@@ -211,7 +211,7 @@ void FilterTarget(Threads T){
   char        *name    = concatenate(P->files[P->ref], 
               concatenate(P->files[T.id], ".sp"));
   FILE        *Writter = Fopen(name, "w");
-  double      *cModelWeight, cModelTotalWeight = 0;
+  double      *cModelWeight, cModelTotalWeight = 0, bits = 0;
   uint64_t    nBase = 0;
   uint32_t    n, k, idxPos, totModels, cModel;
   PARSER      *PA = CreateParser();
@@ -280,8 +280,9 @@ void FilterTarget(Threads T){
       MX->sum += (MX->freqs[2] = 1 + (unsigned) (PT->freqs[2] * MX_PMODEL));
       MX->sum += (MX->freqs[3] = 1 + (unsigned) (PT->freqs[3] * MX_PMODEL));
 
-      InsertInFilter(Filter, PModelSymbolLog(MX, sym), sym);
-      FilterSequence(Filter, Writter, nBase);
+      bits += PModelSymbolLog(MX, sym);
+      //InsertInFilter(Filter, bits, sym);
+      //FilterSequence(Filter, Writter, nBase);
 
       cModelTotalWeight = 0;
       for(n = 0 ; n < totModels ; ++n){
@@ -323,6 +324,8 @@ void FilterTarget(Threads T){
   RemoveFilter(Filter);
   fclose(Writter);
   fclose(Reader);
+
+  P->matrix[P->ref][T.id] = bits / nBase;
   }
 
 
@@ -430,7 +433,7 @@ void CompressAction(Threads *T, uint32_t ref){
 int32_t main(int argc, char *argv[]){
   char        **p = *&argv, **xargv, *xpl = NULL;
   int32_t     xargc = 0;
-  uint32_t    n, k, col, ref;
+  uint32_t    n, k, col, ref, index;
   clock_t     start = clock();
   double      gamma, threshold;
   Threads     *T;
@@ -484,6 +487,11 @@ int32_t main(int argc, char *argv[]){
     if(strcmp(xargv[n], "-t") == 0)
       threshold = atof(xargv[n+1]);
 
+  index = DEFAULT_INDEX;
+  for(n = 1 ; n < xargc ; ++n)
+    if(strcmp(xargv[n], "-i") == 0)
+      index = atoi(xargv[n+1]);
+
   col = MAX_COLLISIONS;
   for(n = 1 ; n < xargc ; ++n) 
     if(strcmp(xargv[n], "-c") == 0) 
@@ -494,6 +502,7 @@ int32_t main(int argc, char *argv[]){
   P->gamma     = ((int)(P->gamma * 65536)) / 65536.0;
   P->threshold = ArgsDouble (threshold, p, argc, "-t");
   P->nFiles    = ReadFNames (P, argv[argc-1]);
+  P->index     = ArgsNum    (index, p, argc, "-i", 2, P->nFiles);
 
   if(P->nModels == 0){
     fprintf(stderr, "Error: at least you need to use a context model!\n");
@@ -516,6 +525,7 @@ int32_t main(int argc, char *argv[]){
       }
     }
 
+  fprintf(stderr, "\n");
   if(P->verbose) PrintArgs(P, T[0]);
 
   P->size   = (uint64_t *) Calloc(P->nFiles, sizeof(uint64_t));
@@ -530,19 +540,25 @@ int32_t main(int argc, char *argv[]){
     exit(1);
     }
 
+  fprintf(stderr, "==[ PROCESSING ]====================\n");
   for(n = 0 ; n < P->nFiles ; ++n)
     CompressAction(T, n);
+  fprintf(stderr, "\n");
 
+  fprintf(stderr, "==[ RESULTS ]=======================\n");
   fprintf(stdout, "Final matrix:\n");
   for(n = 0 ; n < P->nFiles ; ++n){
     for(k = 0 ; k < P->nFiles ; ++k)
-      fprintf(stdout, "%7.5g ", P->matrix[n][k]);
+      fprintf(stdout, "%.4lf\t", P->matrix[n][k]);
     fprintf(stdout, "\n");
     }
+  fprintf(stderr, "\n");
 
+  fprintf(stderr, "==[ STATISTICS ]====================\n");
   //TODO: human readable & min protection
   fprintf(stdout, "Total cpu time: %.2g minutes.\n", (((double) (clock() - 
   start)) / CLOCKS_PER_SEC) / 60.);
+  fprintf(stderr, "\n");
 
   return EXIT_SUCCESS;
   }

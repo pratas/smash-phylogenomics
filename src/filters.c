@@ -75,23 +75,16 @@ void InsertInFilter(FILTER *F, double value, uint8_t base){
 void FilterSequence(FILTER *F, FILE *W, uint64_t pos){
   if(pos > F->guard){
    
-    int64_t n; 
-//  for(n = 0 ; n < pos ; ++n){
-      int64_t k, s;
-      double sum = 0, wSum = 0, tmp;
+    int64_t k;
+    double sum = 0, wSum = 0, tmp;
 
-      for(k = -F->M ; k <= F->M ; ++k){
-        s = n+k;
-        if(s >= 0 && s < pos){
-          sum  += (tmp=F->w[F->M+k])*F->buf[s];
-          wSum += tmp;
-          }
-        }
+    for(k = -F->M ; k <= F->M ; ++k){
+      sum  += (tmp=F->w[F->M+k]) * F->buf[F->idx];
+      wSum += tmp;
+      }
 
-      if(sum/wSum < F->limit){
-        fprintf(W, "%c", NumToDNASym(F->bases[pos]));
-        }
-//    }
+    if(sum/wSum < F->limit)
+      fprintf(W, "%c", NumToDNASym(F->bases[F->idx]));
     } 
   }
 

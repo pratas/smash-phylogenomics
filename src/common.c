@@ -530,12 +530,14 @@ uint8_t CmpCheckSum(uint32_t cs, uint32_t checksum)
 void PrintArgs(Parameters *P, Threads T){
   uint32_t n;
 
+  fprintf(stderr, "==[ CONFIGURATION ]=================\n");
   fprintf(stderr, "Verbose mode ....................... %s\n", P->verbose == 0 
   ? "no" : "yes");
   fprintf(stderr, "Force mode ......................... %s\n", P->force == 0 ? 
   "no" : "yes");
   fprintf(stderr, "Compression level .................. %u\n", P->level);
   fprintf(stderr, "Threshold .......................... %.2lf\n", P->threshold);
+  fprintf(stderr, "Index clustering ................... %u\n", P->index);
   fprintf(stderr, "Number of threads .................. %u\n", P->nThreads);
   for(n = 0 ; n < P->nModels ; ++n){
     fprintf(stderr, "Reference model %d:\n", n+1);
@@ -557,6 +559,7 @@ void PrintArgs(Parameters *P, Threads T){
   for(n = 0 ; n < P->nFiles ; ++n)
     fprintf(stderr, "  [+] Filename %-2u .................. %s\n", n + 1, 
     P->files[n]);
+  fprintf(stderr, "\n");
   }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -38,15 +38,17 @@ typedef int8_t   I8;
 #define DEFAULT_VERBOSE        0
 #define DEFAULT_FORCE          0
 #define DEFAULT_LEVEL          5
+#define DEFAULT_INDEX          2
+#define DEFAULT_THREADS        1
 #define MAX_LEVEL              10
 #define MIN_LEVEL              1
-#define DEFAULT_THREADS        1
 #define MIN_THREADS            1
 #define MAX_THREADS            500
 #define MAX_CTX                31
 #define MIN_CTX                1
 #define MAX_DEN                1000000
 #define MIN_DEN                1
+#define MIN_INDEX              2
 #define BGUARD                 32
 #define DEFAULT_MAX_COUNT      ((1 << (sizeof(ACC) * 8)) - 1)
 #define MX_PMODEL              65535

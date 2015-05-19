@@ -19,7 +19,7 @@ void ModelsExplanation(void){
 
 void PrintMenu(void){
   fprintf(stderr,
-  "Usage: smash-phylog [OPTION]... [FILE1]:[FILE2]:[FILE3]:...               \n"
+  "Usage: smash-phylog [OPTION]... [FILE1]:[FILE2]:[FILE3]:...              \n"
   "A similarity matrix builder for Phylogenomics computation                \n"
   "                                                                         \n"
   "Non-mandatory arguments:                                                 \n"
@@ -29,8 +29,9 @@ void PrintMenu(void){
   "  -v                          verbose mode (more information),           \n"
   "  -s                          show compression levels,                   \n"
   "  -f                          force overwrite of output,                 \n"
-  "  -l <level>                  level of compression [1;9],                \n"
+  "  -l <level>                  level of compression [1;10],               \n"
   "  -t <threshold>              similarity threshold [0;2],                \n"
+  "  -i <index>                  similarity index for clustering,           \n"
   "  -n <nThreads>               number of threads,                         \n"
   "                                                                         \n"
   "Mandatory arguments:                                                     \n"
