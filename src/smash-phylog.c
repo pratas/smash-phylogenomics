@@ -546,7 +546,7 @@ int32_t main(int argc, char *argv[]){
   fprintf(stderr, "\n");
 
   fprintf(stderr, "==[ RESULTS ]=======================\n");
-  fprintf(stdout, "Final matrix:\n");
+  fprintf(stdout, "Normalized Dissimilarity Rate matrix:\n");
   for(n = 0 ; n < P->nFiles ; ++n){
     for(k = 0 ; k < P->nFiles ; ++k)
       fprintf(stdout, "%.4lf\t", P->matrix[n][k]);
