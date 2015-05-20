@@ -7,6 +7,7 @@
 #include <time.h>
 #include <pthread.h>
 #include "mem.h"
+#include "time.h"
 #include "defs.h"
 #include "param.h"
 #include "msg.h"
@@ -434,7 +435,6 @@ int32_t main(int argc, char *argv[]){
   char        **p = *&argv, **xargv, *xpl = NULL;
   int32_t     xargc = 0;
   uint32_t    n, k, col, ref, index;
-  clock_t     start = clock();
   double      gamma, threshold;
   Threads     *T;
   
@@ -541,8 +541,10 @@ int32_t main(int argc, char *argv[]){
     }
 
   fprintf(stderr, "==[ PROCESSING ]====================\n");
+  TIME *Time = CreateClock(clock());
   for(n = 0 ; n < P->nFiles ; ++n)
     CompressAction(T, n);
+  StopTimeNDRM(Time, clock());
   fprintf(stderr, "\n");
 
   fprintf(stderr, "==[ RESULTS ]=======================\n");
@@ -556,10 +558,10 @@ int32_t main(int argc, char *argv[]){
 
   fprintf(stderr, "==[ STATISTICS ]====================\n");
   //TODO: human readable & min protection
-  fprintf(stdout, "Total cpu time: %.2g minutes.\n", (((double) (clock() - 
-  start)) / CLOCKS_PER_SEC) / 60.);
+  StopCalcAll(Time, clock());
   fprintf(stderr, "\n");
 
+  RemoveClock(Time);
   return EXIT_SUCCESS;
   }
 
