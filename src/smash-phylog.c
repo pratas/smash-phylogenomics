@@ -557,7 +557,6 @@ int32_t main(int argc, char *argv[]){
   fprintf(stderr, "\n");
 
   fprintf(stderr, "==[ STATISTICS ]====================\n");
-  //TODO: human readable & min protection
   StopCalcAll(Time, clock());
   fprintf(stderr, "\n");
 
