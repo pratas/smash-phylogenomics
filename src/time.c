@@ -33,8 +33,8 @@ void StopTimeNDRM(TIME *Time, clock_t t){
 
 void StopCalcAll(TIME *Time, clock_t t){
   Time->cpu_total = t - Time->cpu_start;
-  PrintCalc("NDRM  ", Time->cpu_ndrm);
-  PrintCalc("Total ", Time->cpu_total);
+  PrintCalc("NDRM ", Time->cpu_ndrm);
+  PrintCalc("Total", Time->cpu_total);
   }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
