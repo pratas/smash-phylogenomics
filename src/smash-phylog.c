@@ -6,6 +6,12 @@
 #include <ctype.h>
 #include <time.h>
 #include <pthread.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <sys/io.h>
+#include <sys/mman.h>
 #include "mem.h"
 #include "time.h"
 #include "defs.h"
@@ -132,15 +138,13 @@ void FilterTarget(Threads T){
       ++nBase;
       }
 
-  Free(MX);
   Free(name);
   Free(cModelWeight);
-  for(n = 0 ; n < totModels ; ++n){
-    Free(pModel[n]->freqs);
-    Free(pModel[n]);
-    }
+  for(n = 0 ; n < totModels ; ++n)
+    RemovePModel(pModel[n]);
   Free(pModel);
-  Free(PT);
+  RemovePModel(MX);
+  RemoveFPModel(PT);
   for(n = 0 ; n < P->nModels ; ++n)
     FreeShadow(Shadow[n]);
   Free(readBuf);
@@ -169,17 +173,24 @@ void *FilterThread(void *Thr){
 
 void LoadReference(Threads T){
   FILE     *Reader = Fopen(P->files[T.id], "r");
-  uint32_t n, k, idxPos;
+  uint32_t n;
   PARSER   *PA = CreateParser();
   CBUF     *symBuf = CreateCBuffer(BUFFER_SIZE, BGUARD);
-  uint8_t  *readBuf = (uint8_t *) Calloc(BUFFER_SIZE, sizeof(uint8_t));
-  uint8_t  sym, irSym;
+  uint8_t  sym, irSym, *readBuf;
 
   FileType(PA, Reader);
+  fclose(Reader);
 
-  while((k = fread(readBuf, 1, BUFFER_SIZE, Reader)))
-    for(idxPos = 0 ; idxPos < k ; ++idxPos){
-      if(ParseSym(PA, (sym = readBuf[idxPos])) == -1) continue;
+  struct stat s;
+  size_t size, k;
+  int fd = open(P->files[T.id], O_RDONLY);
+
+  fstat (fd, & s);
+  size = s.st_size;
+
+  readBuf = (uint8_t *) mmap(0, size, PROT_READ, MAP_PRIVATE, fd, 0);
+  for(k = 0 ; k < size ; ++k){
+      if(ParseSym(PA, (sym = *readBuf++)) == -1) continue;
       symBuf->buf[symBuf->idx] = sym = DNASymToNum(sym);
       for(n = 0 ; n < P->nModels ; ++n){
         GetPModelIdx(symBuf->buf+symBuf->idx-1, Models[n]);
@@ -194,10 +205,9 @@ void LoadReference(Threads T){
  
   for(n = 0 ; n < P->nModels ; ++n)
     ResetCModelIdx(Models[n]);
-  Free(readBuf);
   RemoveCBuffer(symBuf);
   RemoveParser(PA);
-  fclose(Reader);
+  close(fd);
   }
 
 
@@ -247,6 +257,8 @@ void CompressAction(Threads *T, uint32_t ref){
       //CompressTarget(T, Models, T.id, n);
       }
 */
+  
+  Free(Models);
   }
 
 

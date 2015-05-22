@@ -124,9 +124,16 @@ void GetHCCounters(HashTable *H, U64 key, PModel *P, uint32_t a){
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 PModel *CreatePModel(U32 n){
-  PModel *P = (PModel *) Calloc(1, sizeof(PModel));
-  P->freqs  = (U32    *) Calloc(n, sizeof(U32));
-  return P;
+  PModel *PM = (PModel *) Calloc(1, sizeof(PModel));
+  PM->freqs  = (U32    *) Calloc(n, sizeof(U32));
+  return PM;
+  }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+void RemovePModel(PModel *PM){
+  Free(PM->freqs);
+  Free(PM);
   }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -135,6 +142,13 @@ FloatPModel *CreateFloatPModel(U32 n){
   FloatPModel *F = (FloatPModel *) Calloc(1, sizeof(FloatPModel));
   F->freqs = (double *) Calloc(n, sizeof(double));
   return F;
+  }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+void RemoveFPModel(FloatPModel *FM){
+  Free(FM->freqs);
+  Free(FM);
   }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

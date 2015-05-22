@@ -31,7 +31,6 @@ typedef int8_t   I8;
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 #define BUFFER_SIZE            262144      
-#define PROGRESS_MIN           1000000
 #define DEF_VERSION            0
 #define DEF_EXAMPLE            0
 #define DEFAULT_HELP           0
@@ -40,7 +39,7 @@ typedef int8_t   I8;
 #define DEFAULT_LEVEL          5
 #define DEFAULT_INDEX          2
 #define DEFAULT_THREADS        1
-#define MAX_LEVEL              10
+#define MAX_LEVEL              30
 #define MIN_LEVEL              1
 #define MIN_THREADS            1
 #define MAX_THREADS            500
