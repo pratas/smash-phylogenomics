@@ -538,6 +538,8 @@ void PrintArgs(Parameters *P, Threads T){
   fprintf(stderr, "Compression level .................. %u\n", P->level);
   fprintf(stderr, "Threshold .......................... %.2lf\n", P->threshold);
   fprintf(stderr, "Index clustering ................... %u\n", P->index);
+  fprintf(stderr, "Minimum block size ................. %u\n", P->blockSize);
+  fprintf(stderr, "Window filter size ................. %u\n", P->windowSize);
   fprintf(stderr, "Number of threads .................. %u\n", P->nThreads);
   for(n = 0 ; n < P->nModels ; ++n){
     fprintf(stderr, "Reference model %d:\n", n+1);

@@ -23,6 +23,8 @@ typedef struct{
   U8       estim;
   U8       level;
   U32      col;
+  U32      windowSize;
+  U32      blockSize;
   double   gamma;
   double   threshold;
   U32      index;

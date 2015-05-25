@@ -35,14 +35,23 @@ void Compress(Parameters *P, CModel **cModels, uint8_t id){
 
 
 //////////////////////////////////////////////////////////////////////////////
-// - - - - - - - - - - - - - - - - F I L T E R I N G - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - H O M O L O G Y - - - - - - - - - - - - - - -
+
+void Homology(Threads T){
+  
+
+  }
+
+
+//////////////////////////////////////////////////////////////////////////////
+// - - - - - - - - - - - - - - - F I L T E R I N G - - - - - - - - - - - - - -
 
 void FilterTarget(Threads T){
   FILE        *Reader  = Fopen(P->files[T.id], "r");
   char        *name    = concatenate(P->files[P->ref], 
               concatenate(P->files[T.id], ".sp"));
   FILE        *Writter = Fopen(name, "w");
-  double      *cModelWeight, cModelTotalWeight = 0, bits = 0;
+  double      *cModelWeight, cModelTotalWeight = 0, bits = 0, instance = 0;
   uint64_t    nBase = 0;
   uint32_t    n, k, idxPos, totModels, cModel;
   PARSER      *PA = CreateParser();
@@ -68,7 +77,7 @@ void FilterTarget(Threads T){
     pModel[n]   = CreatePModel(ALPHABET_SIZE);
   MX            = CreatePModel(ALPHABET_SIZE);
   PT            = CreateFloatPModel(ALPHABET_SIZE);
-  Filter        = CreateFilter(10000, P->threshold);
+  Filter        = CreateFilter(400, P->threshold);
   cModelWeight  = (double   *) Calloc(totModels, sizeof(double));
 
   for(n = 0 ; n < totModels ; ++n)
@@ -111,9 +120,9 @@ void FilterTarget(Threads T){
       MX->sum += (MX->freqs[2] = 1 + (unsigned) (PT->freqs[2] * MX_PMODEL));
       MX->sum += (MX->freqs[3] = 1 + (unsigned) (PT->freqs[3] * MX_PMODEL));
 
-      bits += PModelSymbolLog(MX, sym);
-      InsertInFilter(Filter, bits, sym); //XXX
-      FilterSequence(Filter, Writter, nBase); //XXX
+      bits += (instance = PModelSymbolLog(MX, sym));
+      InsertInFilter(Filter, instance, sym);
+      FilterSequence(Filter, Writter, nBase);
 
       cModelTotalWeight = 0;
       for(n = 0 ; n < totModels ; ++n){
@@ -169,6 +178,16 @@ void *FilterThread(void *Thr){
 
 
 //////////////////////////////////////////////////////////////////////////////
+// - - - - - - - - - - - - - - T H R E A D I N G - - - - - - - - - - - - - - -
+
+void *HomologyThread(void *Thr){
+  Threads *T = (Threads *) Thr;
+  Homology(T[0]);
+  pthread_exit(NULL);
+  }
+
+
+//////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - - - R E F E R E N C E - - - - - - - - - - - - -
 
 void LoadReference(Threads T){
@@ -205,6 +224,33 @@ void LoadReference(Threads T){
   RemoveCBuffer(symBuf);
   RemoveParser(PA);
   close(fd);
+  }
+
+//////////////////////////////////////////////////////////////////////////////
+// - - - - - - - - - - - - H O M O L O G Y   A C T I O N - - - - - - - - - - -
+
+void HomologyAction(Threads *T, uint32_t ref){
+  uint32_t n;
+  pthread_t t[P->nThreads];
+  P->ref = ref;
+
+  fprintf(stderr, "Homology filtering %u ... ", P->nFiles);
+  ref = 0;
+  do{
+    for(n = 0 ; n < P->nThreads ; ++n)
+      pthread_create(&(t[n+1]), NULL, HomologyThread, (void *) &(T[ref+n]));
+    for(n = 0 ; n < P->nThreads ; ++n) // DO NOT JOIN FORS!
+      pthread_join(t[n+1], NULL);
+    }
+  while((ref += P->nThreads) < P->nFiles && ref + P->nThreads <= P->nFiles);
+
+  if(ref < P->nFiles){ // EXTRA - OUT OF THE MAIN LOOP
+    for(n = ref ; n < P->nFiles ; ++n)
+      pthread_create(&(t[n+1]), NULL, HomologyThread, (void *) &(T[n]));
+    for(n = ref ; n < P->nFiles ; ++n) // DO NOT JOIN FORS!
+      pthread_join(t[n+1], NULL);
+    }
+  fprintf(stderr, "Done!\n");
   }
 
 
@@ -246,15 +292,6 @@ void CompressAction(Threads *T, uint32_t ref){
 
   for(n = 0 ; n < P->nModels ; ++n)
     FreeCModel(Models[n]);
-
-/*// HERE, WITH THREADING, MEMORY IS QUADRATIC!
-  for(n = 0 ; n < P->nFiles ; ++n)
-    if(T.id != n){
-      //LoadReference(T, Models, IN); //NEW REFERENCE
-      //CompressTarget(T, Models, T.id, n);
-      }
-*/
-  
   Free(Models);
   }
 
@@ -288,7 +325,7 @@ int32_t main(int argc, char *argv[]){
     }
 
   P->verbose  = ArgsState  (DEFAULT_VERBOSE, p, argc, "-v" );
-  P->force    = ArgsState  (DEFAULT_FORCE,   p, argc, "-f" );
+  P->force    = ArgsState  (DEFAULT_FORCE,   p, argc, "-F" );
   P->level    = ArgsNum    (0, p, argc, "-l", MIN_LEVEL, MAX_LEVEL);
   P->nThreads = ArgsNum    (DEFAULT_THREADS, p, argc, "-n", MIN_THREADS, 
   MAX_THREADS);
@@ -330,12 +367,14 @@ int32_t main(int argc, char *argv[]){
     if(strcmp(xargv[n], "-c") == 0) 
       col = atoi(xargv[n+1]);
 
-  P->col       = ArgsNum    (col,   p, argc, "-c", 1, 200);
-  P->gamma     = ArgsDouble (gamma, p, argc, "-g");
-  P->gamma     = ((int)(P->gamma * 65536)) / 65536.0;
-  P->threshold = ArgsDouble (threshold, p, argc, "-t");
-  P->nFiles    = ReadFNames (P, argv[argc-1]);
-  P->index     = ArgsNum    (index, p, argc, "-i", 2, P->nFiles);
+  P->col        = ArgsNum    (col,   p, argc, "-c", 1, 200);
+  P->windowSize = ArgsNum    (DEFAULT_FILTERSIZE, p, argc, "-f", 1, 1000000);
+  P->blockSize  = ArgsNum    (DEFAULT_MINBLOCK,   p, argc, "-b", 1, 9999999);
+  P->gamma      = ArgsDouble (gamma, p, argc, "-g");
+  P->gamma      = ((int)(P->gamma * 65536)) / 65536.0;
+  P->threshold  = ArgsDouble (threshold, p, argc, "-t");
+  P->nFiles     = ReadFNames (P, argv[argc-1]);
+  P->index      = ArgsNum    (index, p, argc, "-i", 2, P->nFiles);
 
   if(P->nModels == 0){
     fprintf(stderr, "Error: at least you need to use a context model!\n");
@@ -375,9 +414,14 @@ int32_t main(int argc, char *argv[]){
 
   fprintf(stderr, "==[ PROCESSING ]====================\n");
   TIME *Time = CreateClock(clock());
+
   for(n = 0 ; n < P->nFiles ; ++n)
     CompressAction(T, n);
   StopTimeNDRM(Time, clock());
+  
+  for(n = 0 ; n < P->nFiles ; ++n)
+    HomologyAction(T, n);
+
   fprintf(stderr, "\n");
 
   fprintf(stderr, "==[ RESULTS ]=======================\n");

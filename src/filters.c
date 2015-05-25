@@ -39,12 +39,18 @@ static void InitWinWeights(FILTER *F){
 FILTER *CreateFilter(uint32_t size, double threshold){
   FILTER *F = (FILTER *) Calloc(1, sizeof(FILTER));
   F->type   = 0;
-  F->size   = size<<1;
-  F->guard  = size;
+  F->size   = size;
+  F->guard  = F->size / 4;
+  if(F->guard < 64){
+    fprintf(stderr, "Error: guard is too short!\n");
+    exit(1);
+    }
   F->buf    = (double  *) Calloc(F->size+F->guard, sizeof(double));
   F->bases  = (uint8_t *) Calloc(F->size+F->guard, sizeof(uint8_t));
+  F->bin    = (uint8_t *) Calloc(F->size+F->guard, sizeof(uint8_t));
   F->buf   += F->guard;
   F->bases += F->guard;
+  F->bin   += F->guard;
   F->idx    = 0;
   F->M      = (int64_t) F->guard;
   F->limit  = threshold;
@@ -59,6 +65,7 @@ void UpdateFilter(FILTER *F){
   if(F->idx == F->size){
     memcpy(F->buf  -F->guard, F->buf  +F->idx-F->guard, F->guard);
     memcpy(F->bases-F->guard, F->bases+F->idx-F->guard, F->guard);
+    memcpy(F->bin  -F->guard, F->bin  +F->idx-F->guard, F->guard);
     F->idx = 0;
     }
   }
@@ -73,17 +80,26 @@ void InsertInFilter(FILTER *F, double value, uint8_t base){
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 void FilterSequence(FILTER *F, FILE *W, uint64_t pos){
+  float result;
 
   if(pos > F->guard){
-    int64_t k;
+    int64_t k, s;
     double sum = 0, wSum = 0, tmp;
     for(k = -F->M ; k <= F->M ; ++k){
-      sum  += (tmp=F->w[F->M+k]) * F->buf[F->idx];
-      wSum += tmp;
+      s = F->idx + k;
+      if(s >= 0 && s < F->size){
+        sum  += (tmp=F->w[F->M+k]) * F->buf[s]; 
+        wSum += tmp;
+        }
       }
-    if(sum/wSum < F->limit)
-      fprintf(W, "%c", NumToDNASym(F->bases[F->idx]));
-    } 
+    result = (float) (sum/wSum);
+    }
+  else
+    result = (float) F->buf[F->idx];
+ 
+  F->bin[F->idx] = result < P->threshold ? 1 : 0;    // 1 IF IS LOW COMPLEXITY
+  //fwrite(F->bin, sizeof(uint64_t), 64, W);
+  fprintf(W, "%u\n", F->bin[F->idx]);
   }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -91,6 +107,7 @@ void FilterSequence(FILTER *F, FILE *W, uint64_t pos){
 void RemoveFilter(FILTER *F){
   Free(F->buf   - F->guard);
   Free(F->bases - F->guard);
+  Free(F->bin   - F->guard);
   Free(F->w);
   Free(F);
   }

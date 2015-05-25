@@ -10,13 +10,14 @@
 
 typedef struct{
   uint8_t   type;
-  uint32_t  size;
+  int64_t   size;
   double    *w;
   int64_t   M;
   double    *buf;
   uint8_t   *bases;
-  uint32_t  idx;
-  uint32_t  guard;
+  uint8_t   *bin;
+  int64_t   idx;
+  int64_t   guard;
   double    limit;
   }
 FILTER;
