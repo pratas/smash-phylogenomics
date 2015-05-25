@@ -234,7 +234,7 @@ void HomologyAction(Threads *T, uint32_t ref){
   pthread_t t[P->nThreads];
   P->ref = ref;
 
-  fprintf(stderr, "Homology filtering %u ... ", P->nFiles);
+  fprintf(stderr, "Homology filtering %u ... ", ref+1);
   ref = 0;
   do{
     for(n = 0 ; n < P->nThreads ; ++n)
