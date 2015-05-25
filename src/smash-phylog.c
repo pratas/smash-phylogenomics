@@ -38,7 +38,11 @@ void Compress(Parameters *P, CModel **cModels, uint8_t id){
 // - - - - - - - - - - - - - - - H O M O L O G Y - - - - - - - - - - - - - - -
 
 void Homology(Threads T){
-  
+/*
+  char        *name    = concatenate(P->files[P->ref],
+              concatenate(P->files[T.id], ".sp"));
+  FILE        *Reader  = Fopen(name, "r");
+*/
 
   }
 
@@ -234,7 +238,7 @@ void HomologyAction(Threads *T, uint32_t ref){
   pthread_t t[P->nThreads];
   P->ref = ref;
 
-  fprintf(stderr, "Homology filtering %u ... ", ref+1);
+  fprintf(stderr, "  [+] Homology filtering %u ... ", ref+1);
   ref = 0;
   do{
     for(n = 0 ; n < P->nThreads ; ++n)
@@ -268,11 +272,11 @@ void CompressAction(Threads *T, uint32_t ref){
     T[ref].model[n].ir, REFERENCE, P->col, T[ref].model[n].edits, 
     T[ref].model[n].eDen);
 
-  fprintf(stderr, "Loading reference %u ... ", ref+1);
+  fprintf(stderr, "  [+] Loading reference %u ... ", ref+1);
   LoadReference(T[ref]);
   fprintf(stderr, "Done!\n");
   
-  fprintf(stderr, "  [+] Filtering %u targets ... ", P->nFiles);
+  fprintf(stderr, "      [+] Filtering %u targets ... ", P->nFiles);
   ref = 0;
   do{
     for(n = 0 ; n < P->nThreads ; ++n)
@@ -415,10 +419,11 @@ int32_t main(int argc, char *argv[]){
   fprintf(stderr, "==[ PROCESSING ]====================\n");
   TIME *Time = CreateClock(clock());
 
+  fprintf(stderr, "Phase 1:\n");
   for(n = 0 ; n < P->nFiles ; ++n)
     CompressAction(T, n);
   StopTimeNDRM(Time, clock());
-  
+  fprintf(stderr, "Phase 2:\n");
   for(n = 0 ; n < P->nFiles ; ++n)
     HomologyAction(T, n);
 

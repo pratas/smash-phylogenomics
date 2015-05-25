@@ -16,6 +16,7 @@ typedef struct{
   double    *buf;
   uint8_t   *bases;
   uint8_t   *bin;
+  uint32_t  iBin;
   int64_t   idx;
   int64_t   guard;
   double    limit;

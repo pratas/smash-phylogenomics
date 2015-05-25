@@ -51,6 +51,7 @@ FILTER *CreateFilter(uint32_t size, double threshold){
   F->buf   += F->guard;
   F->bases += F->guard;
   F->bin   += F->guard;
+  F->iBin   = 0;
   F->idx    = 0;
   F->M      = (int64_t) F->guard;
   F->limit  = threshold;
@@ -98,8 +99,17 @@ void FilterSequence(FILTER *F, FILE *W, uint64_t pos){
     result = (float) F->buf[F->idx];
  
   F->bin[F->idx] = result < P->threshold ? 1 : 0;    // 1 IF IS LOW COMPLEXITY
-  //fwrite(F->bin, sizeof(uint64_t), 64, W);
-  fprintf(W, "%u\n", F->bin[F->idx]);
+
+  if(++F->iBin == 7){        // PACK 8 BITS IN 1 BYTE AND WRITE IT IN THE FILE
+    uint32_t x;
+    uint8_t bin = F->bin[F->idx];
+    for(x = 1 ; x < 8 ; ++x)
+      bin |= (F->bin[F->idx-x]<<x);
+    fwrite(&bin, sizeof(uint8_t), 1, W);
+    //fprintf(W, "%u\n", bin);
+    F->iBin = 0;
+    }
+//  fprintf(W, "%u", F->bin[F->idx]);
   }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
