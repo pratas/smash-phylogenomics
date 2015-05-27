@@ -100,6 +100,7 @@ void FilterSequence(FILTER *F, FILE *W, uint64_t pos){
  
   F->bin[F->idx] = result < P->threshold ? 1 : 0;    // 1 IF IS LOW COMPLEXITY
 
+//http://www.mat.uc.pt/~pedro/lectivos/CodigosCriptografia1011/apontamentosPraticas9a14.pdf
   if(++F->iBin == 7){        // PACK 8 BITS IN 1 BYTE AND WRITE IT IN THE FILE
     uint32_t x;
     uint8_t bin = F->bin[F->idx];

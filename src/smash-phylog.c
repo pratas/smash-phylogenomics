@@ -38,12 +38,51 @@ void Compress(Parameters *P, CModel **cModels, uint8_t id){
 // - - - - - - - - - - - - - - - H O M O L O G Y - - - - - - - - - - - - - - -
 
 void Homology(Threads T){
-/*
-  char        *name    = concatenate(P->files[P->ref],
-              concatenate(P->files[T.id], ".sp"));
-  FILE        *Reader  = Fopen(name, "r");
-*/
+  uint32_t tar = P->ref, ref;
+  char     **inName, *outName;
+  uint8_t  *sym, **bin;
+  FILE     **Reader = NULL, *Writter = NULL, *DNA = NULL;
 
+  sym     = (uint8_t  *) Calloc(P->nFiles, sizeof(uint8_t));
+  bin     = (uint8_t **) Calloc(P->nFiles, sizeof(uint8_t *));
+  inName  = (char    **) Calloc(P->nFiles, sizeof(char *));
+  Reader  = (FILE    **) Calloc(P->nFiles, sizeof(FILE *));
+  outName = concatenate(P->files[tar], ".spd");
+  Writter = Fopen(outName, "w");
+  DNA     = Fopen(P->files[tar], "r");
+  for(ref = 0 ; ref < P->nFiles ; ++ref){
+    if(ref != tar){
+      inName[ref] = concatenate(P->files[ref], 
+                    concatenate(P->files[tar], ".sp"));
+      Reader[ref] = Fopen(inName[ref], "r");
+      bin[ref]    = (uint8_t *) Calloc(8, sizeof(uint8_t));
+      }
+    }
+
+  for(ref = 0 ; ref < P->nFiles ; ++ref){
+    if(ref != tar){
+      while((sym[ref] = fgetc(Reader[ref])) != EOF){
+        UnPackByte(bin[ref], sym[ref]);
+        // char c = fgetc(DNA);
+        // if(SumBits(bin) > P->index)
+        //   fprintf(Writter, "%c", c);
+        }
+      }
+    }
+
+  for(ref = 0 ; ref < P->nFiles ; ++ref){
+    Free(inName[ref]);
+    if(ref != tar){
+      Free(bin[ref]);
+      fclose(Reader[ref]);
+      }
+    }
+  fclose(Writter);
+  fclose(DNA);
+  Free(outName);
+  Free(inName);
+  Free(Reader);
+  Free(bin);
   }
 
 
