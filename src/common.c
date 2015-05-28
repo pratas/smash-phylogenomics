@@ -13,11 +13,11 @@
 
 void UnPackByte(uint8_t *bin, uint8_t sym){
   uint32_t n;
- 
-  for(n = 0 ; n < 8 ; ++n)
-    bin[n] = 0; //|= sym >> n;
-
-  return;
+  uint8_t mask = 0x80;
+  for(n = 8 ; n-- ; ){
+    bin[n] = (sym & mask) >> n;
+    mask >>= 1;
+    }
   }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
