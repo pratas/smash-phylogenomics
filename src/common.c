@@ -12,24 +12,29 @@
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 void UnPackByte(uint8_t *bin, uint8_t sym){
-   
+  uint32_t n;
+ 
+  for(n = 0 ; n < 8 ; ++n)
+    bin[n] = 0; //|= sym >> n;
 
   return;
   }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-int SumBits(uint8_t *x){
-  int sum = 0;
-  sum += x[0];
-  sum += x[1];
-  sum += x[2];
-  sum += x[3];
-  sum += x[4];
-  sum += x[5];
-  sum += x[6];
-  sum += x[7];
-  return sum;
+void SumWriteBits(uint8_t **bin, int tar, FILE *Writter, FILE *DNA){
+  int x, ref, sum;
+
+  for(x = 0 ; x < 8 ; ++x){
+    char c = fgetc(DNA);
+    sum = 0;
+    for(ref = 0 ; ref < P->nFiles ; ++ref)
+      if(ref != tar)
+        sum += bin[ref][x];
+
+    if(sum >= P->index)
+      fprintf(Writter, "%c", c);
+    }
   }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -180,14 +185,11 @@ uint64_t NDNASymInFastq(FILE *file){
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-uint64_t FopenBytesInFile(const char *fn)
-  {
+uint64_t FopenBytesInFile(const char *fn){
   uint64_t size = 0;
   FILE *file = Fopen(fn, "r");
-  
   size = NBytesInFile(file);  
   fclose(file);
-
   return size;
   }
 

@@ -39,6 +39,7 @@ void Compress(Parameters *P, CModel **cModels, uint8_t id){
 
 void Homology(Threads T){
   uint32_t tar = P->ref, ref;
+  uint64_t nSymbols = 0, i;
   char     **inName, *outName;
   uint8_t  *sym, **bin;
   FILE     **Reader = NULL, *Writter = NULL, *DNA = NULL;
@@ -59,15 +60,15 @@ void Homology(Threads T){
       }
     }
 
-  for(ref = 0 ; ref < P->nFiles ; ++ref){
-    if(ref != tar){
-      while((sym[ref] = fgetc(Reader[ref])) != EOF){
+  nSymbols = P->size[tar]>>3;
+  for(i = 0 ; i < nSymbols ; ++i){
+    for(ref = 0 ; ref < P->nFiles ; ++ref){
+      if(ref != tar){
+        sym[ref] = fgetc(Reader[ref]);
         UnPackByte(bin[ref], sym[ref]);
-        // char c = fgetc(DNA);
-        // if(SumBits(bin) > P->index)
-        //   fprintf(Writter, "%c", c);
         }
       }
+    SumWriteBits(bin, tar, Writter, DNA);
     }
 
   for(ref = 0 ; ref < P->nFiles ; ++ref){
@@ -211,7 +212,7 @@ void FilterTarget(Threads T){
 
 
 //////////////////////////////////////////////////////////////////////////////
-// - - - - - - - - - - - - - - T H R E A D I N G - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - F   T H R E A D I N G - - - - - - - - - - - - - - -
 
 void *FilterThread(void *Thr){
   Threads *T = (Threads *) Thr;
@@ -221,7 +222,7 @@ void *FilterThread(void *Thr){
 
 
 //////////////////////////////////////////////////////////////////////////////
-// - - - - - - - - - - - - - - T H R E A D I N G - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - H   T H R E A D I N G - - - - - - - - - - - - - - -
 
 void *HomologyThread(void *Thr){
   Threads *T = (Threads *) Thr;
@@ -417,7 +418,7 @@ int32_t main(int argc, char *argv[]){
   P->gamma      = ((int)(P->gamma * 65536)) / 65536.0;
   P->threshold  = ArgsDouble (threshold, p, argc, "-t");
   P->nFiles     = ReadFNames (P, argv[argc-1]);
-  P->index      = ArgsNum    (index, p, argc, "-i", 2, P->nFiles);
+  P->index      = ArgsNum    (index, p, argc, "-i", 1, P->nFiles);
 
   if(P->nModels == 0){
     fprintf(stderr, "Error: at least you need to use a context model!\n");
@@ -443,9 +444,10 @@ int32_t main(int argc, char *argv[]){
   fprintf(stderr, "\n");
   if(P->verbose) PrintArgs(P, T[0]);
 
-  P->size   = (uint64_t *) Calloc(P->nFiles, sizeof(uint64_t));
   P->matrix = (double  **) Calloc(P->nFiles, sizeof(double *));
+  P->size   = (uint64_t *) Calloc(P->nFiles, sizeof(uint64_t));
   for(n = 0 ; n < P->nFiles ; ++n){
+    P->size[n]   = FopenBytesInFile(P->files[n]);
     P->matrix[n] = (double *) Calloc(P->nFiles, sizeof(double));
     }
 
