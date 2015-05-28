@@ -109,7 +109,7 @@ void FilterSequence(FILTER *F, FILE *W, uint64_t pos){
     //fprintf(W, "%u\n", bin);
     F->iBin = 0;
     }
-//  fprintf(W, "%u", F->bin[F->idx]);
+  //fprintf(W, "%u", F->bin[F->idx]);
   }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -41,6 +41,8 @@ Parameters;
 typedef struct{
   uint32_t id;
   uint32_t tar;
+  uint32_t ref;
+  uint64_t min;
   ModelPar *model;
   }
 Threads;

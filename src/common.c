@@ -21,7 +21,8 @@ void UnPackByte(uint8_t *bin, uint8_t sym){
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-void SumWriteBits(uint8_t **bin, int tar, FILE *Writter, FILE *DNA){
+uint64_t SumWriteBits(uint8_t **bin, int tar, uint64_t min,  FILE *Writter, 
+FILE *DNA){
   int x, ref, sum;
 
   for(x = 0 ; x < 8 ; ++x){
@@ -30,10 +31,12 @@ void SumWriteBits(uint8_t **bin, int tar, FILE *Writter, FILE *DNA){
     for(ref = 0 ; ref < P->nFiles ; ++ref)
       if(ref != tar)
         sum += bin[ref][x];
-
-    if(sum >= P->index)
+    if(sum < P->index)
+      min = 0;
+    else if(++min >= P->blockSize)
       fprintf(Writter, "%c", c);
     }
+  return min;
   }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

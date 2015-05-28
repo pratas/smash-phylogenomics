@@ -44,6 +44,7 @@ void Homology(Threads T){
   uint8_t  *sym, **bin;
   FILE     **Reader = NULL, *Writter = NULL, *DNA = NULL;
 
+  T.min   = 0;
   sym     = (uint8_t  *) Calloc(P->nFiles, sizeof(uint8_t));
   bin     = (uint8_t **) Calloc(P->nFiles, sizeof(uint8_t *));
   inName  = (char    **) Calloc(P->nFiles, sizeof(char *));
@@ -68,7 +69,7 @@ void Homology(Threads T){
         UnPackByte(bin[ref], sym[ref]);
         }
       }
-    SumWriteBits(bin, tar, Writter, DNA);
+    T.min = SumWriteBits(bin, tar, T.min, Writter, DNA);
     }
 
   for(ref = 0 ; ref < P->nFiles ; ++ref){
@@ -276,7 +277,7 @@ void LoadReference(Threads T){
 void HomologyAction(Threads *T, uint32_t ref){
   uint32_t n;
   pthread_t t[P->nThreads];
-  P->ref = ref;
+  P->ref = ref; //XXX: THINK BETTER ON THIS - THREADING
 
   fprintf(stderr, "  [+] Homology filtering %u ... ", ref+1);
   ref = 0;

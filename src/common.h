@@ -15,7 +15,7 @@ INF;
 
 FILE        *Fopen           (const char *, const char *);
 void        UnPackByte       (uint8_t *, uint8_t);
-void        SumWriteBits     (uint8_t **, int, FILE *, FILE *);
+uint64_t    SumWriteBits     (uint8_t **, int, uint64_t, FILE *, FILE *);
 void        ShiftBuffer      (uint8_t *, int, uint8_t);
 void        FillLogTable     (uint32_t, uint32_t, uint32_t);
 double      SearchLog        (uint32_t );
