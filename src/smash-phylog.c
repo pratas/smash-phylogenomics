@@ -38,7 +38,6 @@ void Compress(Parameters *P, CModel **cModels, uint8_t id){
 // - - - - - - - - - - - - - - - H O M O L O G Y - - - - - - - - - - - - - - -
 
 void Homology(Threads T, uint32_t tar){
-  //uint32_t tar = P->ref, ref;
   uint32_t ref;
   uint64_t nSymbols = 0, i;
   char     **inName, *outName;
@@ -123,7 +122,7 @@ void FilterTarget(Threads T){
     pModel[n]   = CreatePModel(ALPHABET_SIZE);
   MX            = CreatePModel(ALPHABET_SIZE);
   PT            = CreateFloatPModel(ALPHABET_SIZE);
-  Filter        = CreateFilter(400, P->threshold);
+  Filter        = CreateFilter(P->windowSize, P->threshold);
   cModelWeight  = (double   *) Calloc(totModels, sizeof(double));
 
   for(n = 0 ; n < totModels ; ++n)
@@ -224,16 +223,6 @@ void *FilterThread(void *Thr){
 
 
 //////////////////////////////////////////////////////////////////////////////
-// - - - - - - - - - - - - H   T H R E A D I N G - - - - - - - - - - - - - - -
-/*
-void *HomologyThread(void *Thr){
-  Threads *T = (Threads *) Thr;
-  Homology(T[0]);
-  pthread_exit(NULL);
-  }
-*/
-
-//////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - - - R E F E R E N C E - - - - - - - - - - - - -
 
 void LoadReference(Threads T){
@@ -273,38 +262,6 @@ void LoadReference(Threads T){
   }
 
 
-//////////////////////////////////////////////////////////////////////////////
-// - - - - - - - - - - - - H O M O L O G Y   A C T I O N - - - - - - - - - - -
-/*
-void HomologyAction(Threads *T, uint32_t ref){
-  uint32_t n;
-//  pthread_t t[P->nThreads];
-  P->ref = ref; //XXX: THINK BETTER ON THIS - THREADING
-
-
-  P->nThreads = 1; //FIXME: FORCE THREADING IS THE SAME... ulimit?!
-
-  fprintf(stderr, "  [+] Homology filtering %u ... ", ref+1);
-  ref = 0;
-
-  do{
-    for(n = 0 ; n < P->nThreads ; ++n)
-      pthread_create(&(t[n+1]), NULL, HomologyThread, (void *) &(T[ref+n]));
-    for(n = 0 ; n < P->nThreads ; ++n) // DO NOT JOIN FORS!
-      pthread_join(t[n+1], NULL);
-    }
-  while((ref += P->nThreads) < P->nFiles && ref + P->nThreads <= P->nFiles);
-
-  if(ref < P->nFiles){ // EXTRA - OUT OF THE MAIN LOOP
-    for(n = ref ; n < P->nFiles ; ++n)
-      pthread_create(&(t[n+1]), NULL, HomologyThread, (void *) &(T[n]));
-    for(n = ref ; n < P->nFiles ; ++n) // DO NOT JOIN FORS!
-      pthread_join(t[n+1], NULL);
-    }
-  fprintf(stderr, "Done!\n");
-  }
-
-*/
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - C O M P R E S S O R - - - - - - - - - - - - - -
 
