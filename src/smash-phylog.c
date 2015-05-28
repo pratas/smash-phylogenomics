@@ -37,8 +37,9 @@ void Compress(Parameters *P, CModel **cModels, uint8_t id){
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - - H O M O L O G Y - - - - - - - - - - - - - - -
 
-void Homology(Threads T){
-  uint32_t tar = P->ref, ref;
+void Homology(Threads T, uint32_t tar){
+  //uint32_t tar = P->ref, ref;
+  uint32_t ref;
   uint64_t nSymbols = 0, i;
   char     **inName, *outName;
   uint8_t  *sym, **bin;
@@ -224,13 +225,13 @@ void *FilterThread(void *Thr){
 
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - H   T H R E A D I N G - - - - - - - - - - - - - - -
-
+/*
 void *HomologyThread(void *Thr){
   Threads *T = (Threads *) Thr;
   Homology(T[0]);
   pthread_exit(NULL);
   }
-
+*/
 
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - - - R E F E R E N C E - - - - - - - - - - - - -
@@ -271,16 +272,21 @@ void LoadReference(Threads T){
   close(fd);
   }
 
+
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - H O M O L O G Y   A C T I O N - - - - - - - - - - -
-
+/*
 void HomologyAction(Threads *T, uint32_t ref){
   uint32_t n;
-  pthread_t t[P->nThreads];
+//  pthread_t t[P->nThreads];
   P->ref = ref; //XXX: THINK BETTER ON THIS - THREADING
+
+
+  P->nThreads = 1; //FIXME: FORCE THREADING IS THE SAME... ulimit?!
 
   fprintf(stderr, "  [+] Homology filtering %u ... ", ref+1);
   ref = 0;
+
   do{
     for(n = 0 ; n < P->nThreads ; ++n)
       pthread_create(&(t[n+1]), NULL, HomologyThread, (void *) &(T[ref+n]));
@@ -298,7 +304,7 @@ void HomologyAction(Threads *T, uint32_t ref){
   fprintf(stderr, "Done!\n");
   }
 
-
+*/
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - C O M P R E S S O R - - - - - - - - - - - - - -
 
@@ -466,8 +472,11 @@ int32_t main(int argc, char *argv[]){
     CompressAction(T, n);
   StopTimeNDRM(Time, clock());
   fprintf(stderr, "Phase 2:\n");
-  for(n = 0 ; n < P->nFiles ; ++n)
-    HomologyAction(T, n);
+  for(n = 0 ; n < P->nFiles ; ++n){
+    fprintf(stderr, "  [+] Homology filtering %u ... ", n+1);
+    Homology(T[n], n);
+    fprintf(stderr, "Done!\n");
+    }
 
   fprintf(stderr, "\n");
 
