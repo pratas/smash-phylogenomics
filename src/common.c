@@ -12,19 +12,22 @@
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 void UnPackByte(uint8_t *bin, uint8_t sym){
-  uint32_t n, mask = 0x80;
-  for(n = 8 ; n-- ; ){
-    bin[7-n] = (sym & mask) >> n;
-    mask >>= 1;
-    }
+  *bin++ = (sym & 0x80) >> 7;
+  *bin++ = (sym & 0x40) >> 6;
+  *bin++ = (sym & 0x20) >> 5;
+  *bin++ = (sym & 0x10) >> 4;
+  *bin++ = (sym & 0x08) >> 3;
+  *bin++ = (sym & 0x04) >> 2;
+  *bin++ = (sym & 0x02) >> 1;
+  *bin++ = (sym & 0x01);
   }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 uint8_t PackByte(uint8_t *bin){
-  uint8_t byte = bin[0];
-  for(x = 1 ; x < 8 ; ++x)
-      byte |= (bin[x]<<x);
+  uint8_t byte = (((*bin++)<<7) | ((*bin++)<<6) | ((*bin++)<<5) | 
+                  ((*bin++)<<4) | ((*bin++)<<3) | ((*bin++)<<2) | 
+                  ((*bin++)<<1) |  (*bin++)); // 48 = '0' in decimal
   return byte;
   }
 
@@ -35,11 +38,11 @@ FILE *DNA){
   int x, ref, sum;
 
   for(x = 0 ; x < 8 ; ++x){
-    char c = fgetc(DNA);
+    char c = fgetc(DNA); //FIXME: extra chars
     sum = 0;
     for(ref = 0 ; ref < P->nFiles ; ++ref)
       if(ref != tar)
-        sum += bin[ref][x];
+        sum += (uint8_t) bin[ref][x];
     if(sum < P->index)
       min = 0;
     else if(++min >= P->blockSize)
