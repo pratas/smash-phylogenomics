@@ -21,6 +21,15 @@ void UnPackByte(uint8_t *bin, uint8_t sym){
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+uint8_t PackByte(uint8_t *bin){
+  uint8_t byte = bin[0];
+  for(x = 1 ; x < 8 ; ++x)
+      byte |= (bin[x]<<x);
+  return byte;
+  }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 uint64_t SumWriteBits(uint8_t **bin, int tar, uint64_t min,  FILE *Writter, 
 FILE *DNA){
   int x, ref, sum;
