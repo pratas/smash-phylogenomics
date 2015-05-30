@@ -101,18 +101,11 @@ void FilterSequence(FILTER *F, FILE *W, uint64_t pos){
   F->bin[F->idx] = result < P->threshold ? 1 : 0;    // 1 IF IS LOW COMPLEXITY
 
   if(++F->iBin == 7){        // PACK 8 BITS IN 1 BYTE AND WRITE IT IN THE FILE
-
-    // XXX: EXISTE UM FDP D 1 ERRO ALGURES
-
-    uint8_t bin = PackByte(&F->bin[F->idx-7]);
-
-/*
-    uint32_t x;
-    uint8_t bin = F->bin[F->idx];
-    for(x = 1 ; x < 8 ; ++x)
-      bin |= (F->bin[F->idx-x]<<x);
-*/
-
+    //uint8_t bin = PackByte(F->bin+F->idx-7);
+    uint8_t bin = ((F->bin[F->idx-7]<<7) | (F->bin[F->idx-6]<<6) | 
+                   (F->bin[F->idx-5]<<5) | (F->bin[F->idx-4]<<4) | 
+                   (F->bin[F->idx-3]<<3) | (F->bin[F->idx-2]<<2) |
+                   (F->bin[F->idx-1]<<1) |  F->bin[F->idx]);
     fwrite(&bin, sizeof(uint8_t), 1, W);
     //fprintf(W, "%u\n", bin);
     F->iBin = 0;
