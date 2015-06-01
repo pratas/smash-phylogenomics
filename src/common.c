@@ -25,9 +25,12 @@ void UnPackByte(uint8_t *bin, uint8_t sym){
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 uint8_t PackByte(uint8_t *bin){
-  uint8_t byte = (((*bin++)<<7) | ((*bin++)<<6) | ((*bin++)<<5) | 
+  uint8_t byte = 0;
+/*
+          byte = (((*bin++)<<7) | ((*bin++)<<6) | ((*bin++)<<5) | 
                   ((*bin++)<<4) | ((*bin++)<<3) | ((*bin++)<<2) | 
                   ((*bin++)<<1) |  (*bin)); // 48 = '0' in decimal
+*/
   return byte;
   }
 
@@ -42,14 +45,14 @@ FILE *DNA){
     sum = 0;
     for(ref = 0 ; ref < P->nFiles ; ++ref)
       if(ref != tar)
-        sum += (uint8_t) bin[ref][x];
+        sum += (int) bin[ref][x];
 
     if(sum < P->index)
       min = 0;
     else if(++min >= P->blockSize)
       fprintf(Writter, "%c", c);
-
     }
+
   return min;
   }
 

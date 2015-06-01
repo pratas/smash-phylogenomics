@@ -4,15 +4,15 @@
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 static void PrintCalc(char *text, clock_t t){
-  double seconds = (double) t / CLOCKS_PER_SEC;
+  uint32_t seconds = t / CLOCKS_PER_SEC;
   if(seconds <= 60)
-    fprintf(stdout, "%s cpu time: %u second(s).\n", text, (uint32_t) seconds);
+    fprintf(stdout, "%s cpu time: %u second(s).\n", text, seconds);
   else if(seconds <= 3600)
     fprintf(stdout, "%s cpu time: %u minute(s) and %u second(s).\n", text, 
-    (uint32_t) (seconds / 60), (uint32_t) seconds % 60);
+    seconds / 60, seconds % 60);
   else
     fprintf(stdout, "%s cpu time: %u hour(s) and %u minute(s).\n", text, 
-    (uint32_t) (seconds / 3600), (uint32_t) seconds % 3600);
+    seconds / 3600, seconds % 3600);
   }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
