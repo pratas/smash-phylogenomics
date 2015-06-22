@@ -1,0 +1,42 @@
+#============================================================================#
+#              smash-phylog 2015 IEETA/DETI, UNIVERSITY OF AVEIRO            #
+#============================================================================#
+BIN    = .
+CC     = gcc
+CPLP   =
+#-----------------------------------------------------------------------------
+CFLAGS = -O3 -Wall $(CPLP)
+#-----------------------------------------------------------------------------
+LIBS   = -lm -lpthread
+DEPS   = defs.h param.h
+PROGS  = $(BIN)/smash-phylog
+OBJS   = mem.o time.o msg.o parser.o common.o buffer.o levels.o filters.o cmodel.o 
+#-----------------------------------------------------------------------------
+all:
+	$(MAKE) progs
+progs: $(PROGS)
+$(BIN)/smash-phylog: smash-phylog.c $(DEPS) $(OBJS)
+	$(CC) $(CFLAGS) -o $(BIN)/smash-phylog smash-phylog.c $(OBJS) $(LIBS)
+mem.o: mem.c mem.h $(DEPS)
+	$(CC) -c $(CFLAGS) mem.c
+time.o: time.c time.h $(DEPS)
+	$(CC) -c $(CFLAGS) time.c
+msg.o: msg.c msg.h $(DEPS)
+	$(CC) -c $(CFLAGS) msg.c
+parser.o: parser.c parser.h $(DEPS)
+	$(CC) -c $(CFLAGS) parser.c
+buffer.o: buffer.c buffer.h $(DEPS)
+	$(CC) -c $(CFLAGS) buffer.c
+common.o: common.c common.h $(DEPS)
+	$(CC) -c $(CFLAGS) common.c
+levels.o: levels.c levels.h $(DEPS)
+	$(CC) -c $(CFLAGS) levels.c
+filters.o: filters.c filters.h $(DEPS)
+	$(CC) -c $(CFLAGS) filters.c
+cmodel.o: cmodel.c cmodel.h $(DEPS)
+	$(CC) -c $(CFLAGS) cmodel.c
+clean:
+	/bin/rm -f *.o
+cleanall:
+	/bin/rm -f *.o $(PROGS)
+#-----------------------------------------------------------------------------
