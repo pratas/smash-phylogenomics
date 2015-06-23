@@ -23,8 +23,39 @@
 #include "common.h"
 #include "cmodel.h"
 #include "filters.h"
+#include "paint.h"
 
 CModel **Models;  // MEMORY SHARED BY THREADING
+
+//////////////////////////////////////////////////////////////////////////////
+// - - - - - - - - - - - - - - - - - P A I N T - - - - - - - - - - - - - - - -
+
+void PaintMatrix(void){
+  FILE *Plot = Fopen("plot.svg", "w");
+  char backColor[] = "#ffffff";
+  Painter *Paint;
+  uint32_t ref, tar;
+
+  Paint = CreatePainter(500, backColor);
+
+  PrintHead(Plot, (2 * DEFAULT_CX) + (((Paint->width + DEFAULT_SPACE) *
+  P->nFiles) - DEFAULT_SPACE), 500 + EXTRA);
+
+  Rect(Plot, (2 * DEFAULT_CX) + (((Paint->width + DEFAULT_SPACE) *
+  P->nFiles) - DEFAULT_SPACE), 500 + EXTRA, 0, 0, backColor);
+
+  for(ref = 0 ; ref < P->nFiles ; ++ref){
+    for(tar = 0 ; tar < P->nFiles ; ++tar){
+      Rect(Plot, Paint->width, Paint->width, Paint->cx, Paint->cy, "#000000");
+      Paint->cx += Paint->width + DEFAULT_SPACE;
+      }
+    Paint->cx =  DEFAULT_CX;
+    Paint->cy += Paint->width + DEFAULT_SPACE;
+    }
+
+  PrintFinal(Plot);
+  }
+
 
 //////////////////////////////////////////////////////////////////////////////
 // - - - - - - - - - - - - - - C O M P R E S S I N G - - - - - - - - - - - - - 
@@ -217,11 +248,11 @@ void CompressAction(Threads *T, uint32_t ref){
     T[ref].model[n].ir, REFERENCE, P->col, T[ref].model[n].edits, 
     T[ref].model[n].eDen);
 
-  fprintf(stdout, "  [+] Loading reference %u ... ", ref+1);
+  fprintf(stderr, "  [+] Loading reference %u ... ", ref+1);
   LoadReference(T[ref]);
-  fprintf(stdout, "Done!\n");
+  fprintf(stderr, "Done!\n");
   
-  fprintf(stdout, "      [+] Compressing %u targets ... ", P->nFiles);
+  fprintf(stderr, "      [+] Compressing %u targets ... ", P->nFiles);
   ref = 0;
   do{
     for(n = 0 ; n < P->nThreads ; ++n)
@@ -237,7 +268,7 @@ void CompressAction(Threads *T, uint32_t ref){
     for(n = ref ; n < P->nFiles ; ++n) // DO NOT JOIN FORS!
       pthread_join(t[n+1], NULL);
     }
-  fprintf(stdout, "Done!\n");
+  fprintf(stderr, "Done!\n");
 
   for(n = 0 ; n < P->nModels ; ++n)
     FreeCModel(Models[n]);
@@ -362,26 +393,28 @@ int32_t main(int argc, char *argv[]){
     exit(1);
     }
 
-  fprintf(stdout, "==[ PROCESSING ]====================\n");
+  fprintf(stderr, "==[ PROCESSING ]====================\n");
   TIME *Time = CreateClock(clock());
 
   for(n = 0 ; n < P->nFiles ; ++n)
     CompressAction(T, n);
   StopTimeNDRM(Time, clock());
-  fprintf(stdout, "\n");
+  fprintf(stderr, "\n");
 
-  fprintf(stdout, "==[ RESULTS ]=======================\n");
-  fprintf(stdout, "Normalized Dissimilarity Rate matrix:\n");
+  fprintf(stderr, "==[ RESULTS ]=======================\n");
+  fprintf(stderr, "Normalized Dissimilarity Rate matrix:\n");
   for(n = 0 ; n < P->nFiles ; ++n){
     for(k = 0 ; k < P->nFiles ; ++k)
-      fprintf(stdout, "%.4lf\t", P->matrix[n][k]);
-    fprintf(stdout, "\n");
+      fprintf(stderr, "%.4lf\t", P->matrix[n][k]);
+    fprintf(stderr, "\n");
     }
-  fprintf(stdout, "\n");
 
-  fprintf(stdout, "==[ STATISTICS ]====================\n");
+  PaintMatrix();
+  fprintf(stderr, "\n");
+
+  fprintf(stderr, "==[ STATISTICS ]====================\n");
   StopCalcAll(Time, clock());
-  fprintf(stdout, "\n");
+  fprintf(stderr, "\n");
 
   RemoveClock(Time);
 

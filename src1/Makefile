@@ -279,6 +279,30 @@ msg.c.s:
 	$(MAKE) -f CMakeFiles/smash-phylog.dir/build.make CMakeFiles/smash-phylog.dir/msg.c.s
 .PHONY : msg.c.s
 
+paint.o: paint.c.o
+.PHONY : paint.o
+
+# target to build an object file
+paint.c.o:
+	$(MAKE) -f CMakeFiles/smash-phylog.dir/build.make CMakeFiles/smash-phylog.dir/paint.c.o
+.PHONY : paint.c.o
+
+paint.i: paint.c.i
+.PHONY : paint.i
+
+# target to preprocess a source file
+paint.c.i:
+	$(MAKE) -f CMakeFiles/smash-phylog.dir/build.make CMakeFiles/smash-phylog.dir/paint.c.i
+.PHONY : paint.c.i
+
+paint.s: paint.c.s
+.PHONY : paint.s
+
+# target to generate assembly for a file
+paint.c.s:
+	$(MAKE) -f CMakeFiles/smash-phylog.dir/build.make CMakeFiles/smash-phylog.dir/paint.c.s
+.PHONY : paint.c.s
+
 parser.o: parser.c.o
 .PHONY : parser.o
 
@@ -381,6 +405,9 @@ help:
 	@echo "... msg.o"
 	@echo "... msg.i"
 	@echo "... msg.s"
+	@echo "... paint.o"
+	@echo "... paint.i"
+	@echo "... paint.s"
 	@echo "... parser.o"
 	@echo "... parser.i"
 	@echo "... parser.s"
