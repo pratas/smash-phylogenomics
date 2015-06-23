@@ -48,6 +48,7 @@ void PaintMatrix(void){
       Rect(Plot, Paint->width, Paint->width, Paint->cx, Paint->cy, GetRgbColor(255 * P->matrix[ref][tar]));
       Paint->cx += Paint->width + DEFAULT_SPACE;
       }
+    Text(Plot, Paint->cx + 4, (Paint->cy+Paint->width/2)+6, P->files[ref]);
     Paint->cx =  DEFAULT_CX;
     Paint->cy += Paint->width + DEFAULT_SPACE;
     }
