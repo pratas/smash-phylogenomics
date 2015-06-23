@@ -10,7 +10,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <sys/io.h>
+#include <sys/uio.h>
 #include <sys/mman.h>
 #include "mem.h"
 #include "time.h"
