@@ -39,7 +39,7 @@ void PaintMatrix(void){
   Paint = CreatePainter(500, backColor);
 
   PrintHead(Plot, (2 * DEFAULT_CX) + (((Paint->width + DEFAULT_SPACE) *
-  P->nFiles) - DEFAULT_SPACE), 500 + EXTRA);
+  P->nFiles) - DEFAULT_SPACE), 200 + EXTRA);
 
   Rect(Plot, (2 * DEFAULT_CX) + (((Paint->width + DEFAULT_SPACE) *
   P->nFiles) - DEFAULT_SPACE), 500 + EXTRA, 0, 0, backColor);
