@@ -36,17 +36,16 @@ void PaintMatrix(void){
   Painter *Paint;
   uint32_t ref, tar;
 
-  Paint = CreatePainter(500, backColor);
-
+  Paint = CreatePainter(/* HEIGHT */ 400, backColor);
   PrintHead(Plot, (2 * DEFAULT_CX) + (((Paint->width + DEFAULT_SPACE) *
-  P->nFiles) - DEFAULT_SPACE), 200 + EXTRA);
+  P->nFiles) - DEFAULT_SPACE), Paint->size + EXTRA);
 
   Rect(Plot, (2 * DEFAULT_CX) + (((Paint->width + DEFAULT_SPACE) *
-  P->nFiles) - DEFAULT_SPACE), 500 + EXTRA, 0, 0, backColor);
+  P->nFiles) - DEFAULT_SPACE), Paint->size + EXTRA, 0, 0, backColor);
 
   for(ref = 0 ; ref < P->nFiles ; ++ref){
     for(tar = 0 ; tar < P->nFiles ; ++tar){
-      Rect(Plot, Paint->width, Paint->width, Paint->cx, Paint->cy, "#000000");
+      Rect(Plot, Paint->width, Paint->width, Paint->cx, Paint->cy, GetRgbColor(255 * P->matrix[ref][tar]));
       Paint->cx += Paint->width + DEFAULT_SPACE;
       }
     Paint->cx =  DEFAULT_CX;
