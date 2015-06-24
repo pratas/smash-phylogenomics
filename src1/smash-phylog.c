@@ -45,7 +45,7 @@ void PaintMatrix(void){
 
   for(ref = 0 ; ref < P->nFiles ; ++ref){
     for(tar = 0 ; tar < P->nFiles ; ++tar){
-      char color[20];
+      char color[10];
       Rect(Plot, Paint->width, Paint->width, Paint->cx, Paint->cy, HeatMapColor(P->matrix[ref][tar], color));
       Paint->cx += Paint->width + DEFAULT_SPACE;
       }
