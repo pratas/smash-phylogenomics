@@ -11,6 +11,14 @@
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+double BoundDouble(double low, double value, double high){
+  if(value < low ) return low;
+  if(value > high) return high;
+  return value;
+  }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 void UnPackByte(uint8_t *bin, uint8_t sym){
   *bin++ = (sym & 0x80) >> 7;
   *bin++ = (sym & 0x40) >> 6;

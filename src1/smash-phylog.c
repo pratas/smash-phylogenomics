@@ -36,7 +36,7 @@ void PaintMatrix(void){
   Painter *Paint;
   uint32_t ref, tar;
 
-  Paint = CreatePainter(/* HEIGHT */ 400, backColor);
+  Paint = CreatePainter(/* HEIGHT */ DEFAULT_CX * 2 + ((DEFAULT_WIDTH + DEFAULT_SPACE) * P->nFiles) + 5, backColor);
   PrintHead(Plot, (2 * DEFAULT_CX) + (((Paint->width + DEFAULT_SPACE) *
   P->nFiles) - DEFAULT_SPACE), Paint->size + EXTRA);
 
@@ -45,12 +45,13 @@ void PaintMatrix(void){
 
   for(ref = 0 ; ref < P->nFiles ; ++ref){
     for(tar = 0 ; tar < P->nFiles ; ++tar){
-      Rect(Plot, Paint->width, Paint->width, Paint->cx, Paint->cy, GetRgbColor(255 * P->matrix[ref][tar]));
+      char color[20];
+      Rect(Plot, Paint->width, Paint->width, Paint->cx, Paint->cy, HeatMapColor(P->matrix[ref][tar], color));
       Paint->cx += Paint->width + DEFAULT_SPACE;
       }
     // TEXT HAS 16 PX -> CALCULATE AVERAGE POSITION
     Text   (Plot, Paint->cx + 4, (Paint->cy+Paint->width/2)+6, P->files[ref]);
-    Text90d(Plot, Paint->cx + 4, (Paint->cy+Paint->width/2)+6, P->files[ref]);
+    Text90d(Plot, /*Paint->cx*/4-DEFAULT_CX, (Paint->cy+Paint->width/2)+10, P->files[ref]);
     Paint->cx =  DEFAULT_CX;
     Paint->cy += Paint->width + DEFAULT_SPACE;
     }
