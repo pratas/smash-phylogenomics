@@ -49,7 +49,8 @@ void PaintMatrix(void){
       Paint->cx += Paint->width + DEFAULT_SPACE;
       }
     // TEXT HAS 16 PX -> CALCULATE AVERAGE POSITION
-    Text(Plot, Paint->cx + 4, (Paint->cy+Paint->width/2)+6, P->files[ref]);
+    Text   (Plot, Paint->cx + 4, (Paint->cy+Paint->width/2)+6, P->files[ref]);
+    Text90d(Plot, Paint->cx + 4, (Paint->cy+Paint->width/2)+6, P->files[ref]);
     Paint->cx =  DEFAULT_CX;
     Paint->cy += Paint->width + DEFAULT_SPACE;
     }
@@ -239,7 +240,7 @@ void LoadReference(Threads T){
 // - - - - - - - - - - - - - - C O M P R E S S O R - - - - - - - - - - - - - -
 
 void CompressAction(Threads *T, uint32_t ref){
-  uint32_t n;
+  uint32_t n, k;
   pthread_t t[P->nThreads];
   P->ref = ref;
 
@@ -264,10 +265,10 @@ void CompressAction(Threads *T, uint32_t ref){
   while((ref += P->nThreads) < P->nFiles && ref + P->nThreads <= P->nFiles);
 
   if(ref < P->nFiles){ // EXTRA - OUT OF THE MAIN LOOP
-    for(n = ref ; n < P->nFiles ; ++n)
-      pthread_create(&(t[n+1]), NULL, CompressThread, (void *) &(T[n]));
-    for(n = ref ; n < P->nFiles ; ++n) // DO NOT JOIN FORS!
-      pthread_join(t[n+1], NULL);
+    for(n = ref, k = 0 ; n < P->nFiles ; ++n)
+      pthread_create(&(t[++k]), NULL, CompressThread, (void *) &(T[n]));
+    for(n = ref, k = 0 ; n < P->nFiles ; ++n) // DO NOT JOIN FORS!
+      pthread_join(t[++k], NULL);
     }
   fprintf(stderr, "Done!\n");
 
@@ -400,7 +401,10 @@ int32_t main(int argc, char *argv[]){
   for(n = 0 ; n < P->nFiles ; ++n)
     CompressAction(T, n);
   StopTimeNDRM(Time, clock());
-  fprintf(stderr, "\n");
+
+  fprintf(stderr, "  [+] Painting heatmap ... ");
+  PaintMatrix();
+  fprintf(stderr, "Done! \n\n");
 
   fprintf(stderr, "==[ RESULTS ]=======================\n");
   fprintf(stderr, "Normalized Dissimilarity Rate matrix:\n");
@@ -409,9 +413,6 @@ int32_t main(int argc, char *argv[]){
       fprintf(stderr, "%.4lf\t", P->matrix[n][k]);
     fprintf(stderr, "\n");
     }
-
-  PaintMatrix();
-  fprintf(stderr, "\n");
 
   fprintf(stderr, "==[ STATISTICS ]====================\n");
   StopCalcAll(Time, clock());
