@@ -43,6 +43,10 @@ void PaintMatrix(void){
   Rect(Plot, (2 * DEFAULT_CX) + (((Paint->width + DEFAULT_SPACE) *
   P->nFiles) - DEFAULT_SPACE), Paint->size + EXTRA, 0, 0, backColor);
 
+  // PRINT HEATMAP SCALE
+  Rect(Plot, Paint->width, ((Paint->width + DEFAULT_SPACE) * P->nFiles - DEFAULT_SPACE), 
+  DEFAULT_CX - 60, Paint->cy, "#000000");
+
   for(ref = 0 ; ref < P->nFiles ; ++ref){
     for(tar = 0 ; tar < P->nFiles ; ++tar){
       char color[12];
@@ -414,6 +418,7 @@ int32_t main(int argc, char *argv[]){
       fprintf(stderr, "%.4lf\t", P->matrix[n][k]);
     fprintf(stderr, "\n");
     }
+  fprintf(stderr, "\n");
 
   fprintf(stderr, "==[ STATISTICS ]====================\n");
   StopCalcAll(Time, clock());
