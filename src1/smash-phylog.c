@@ -49,6 +49,9 @@ void PaintMatrix(void){
     char color[12];
     Rect(Plot, Paint->width, 1, DEFAULT_CX - 60, Paint->cy + ref, HeatMapColor((double) ref / size, color));
     }
+  Text90d(Plot, -DEFAULT_CX - ((size/2)+25), (Paint->cy-Paint->width*2)-4, "SCALE");
+  Text   (Plot, DEFAULT_CX-95, Paint->cy+12, "1.0");
+  Text   (Plot, DEFAULT_CX-95, Paint->cy+size, "0.0");
 
   for(ref = 0 ; ref < P->nFiles ; ++ref){
     for(tar = 0 ; tar < P->nFiles ; ++tar){
@@ -62,7 +65,7 @@ void PaintMatrix(void){
     Paint->cx =  DEFAULT_CX;
     Paint->cy += Paint->width + DEFAULT_SPACE;
     }
-
+  
   PrintFinal(Plot);
   }
 
