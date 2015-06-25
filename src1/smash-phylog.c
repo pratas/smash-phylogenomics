@@ -45,11 +45,9 @@ void PaintMatrix(void){
 
   // PRINT HEATMAP SCALE
   uint32_t size = (Paint->width + DEFAULT_SPACE) * P->nFiles - DEFAULT_SPACE;
-
   for(ref = 0 ; ref < size ; ++ref){
     char color[12];
-    Rect(Plot, Paint->width, 1, DEFAULT_CX - 60, Paint->cy + ref, 
-    HeatMapColor((double) ref / size, color));
+    Rect(Plot, Paint->width, 1, DEFAULT_CX - 60, Paint->cy + ref, HeatMapColor((double) ref / size, color));
     }
 
   for(ref = 0 ; ref < P->nFiles ; ++ref){
