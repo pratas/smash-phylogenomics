@@ -47,16 +47,18 @@ void PaintMatrix(void){
   uint32_t size = (Paint->width + DEFAULT_SPACE) * P->nFiles - DEFAULT_SPACE;
   for(ref = 0 ; ref < size ; ++ref){
     char color[12];
-    Rect(Plot, Paint->width, 1, DEFAULT_CX - 60, Paint->cy + ref, HeatMapColor((double) ref / size, color));
+    Rect(Plot, Paint->width, 1, DEFAULT_CX - (DEFAULT_WIDTH*2), Paint->cy + ref, 
+    HeatMapColor(((double) ref / size), color));
     }
-  Text90d(Plot, -DEFAULT_CX - ((size/2)+25), /*(Paint->cy-Paint->width*2)*/DEFAULT_CX-64, "SCALE");
-  Text   (Plot, DEFAULT_CX-95, Paint->cy+13, "1.0");
-  Text   (Plot, DEFAULT_CX-95, Paint->cy+size, "0.0");
+  Text90d(Plot, -DEFAULT_CX - ((size/2)+25), DEFAULT_CX-(DEFAULT_WIDTH*2 + 2), "SCALE");
+  Text   (Plot, DEFAULT_CX-(DEFAULT_WIDTH*2 + 14), Paint->cy+13, "1");
+  Text   (Plot, DEFAULT_CX-(DEFAULT_WIDTH*2 + 14), Paint->cy+size, "0");
 
   for(ref = 0 ; ref < P->nFiles ; ++ref){
     for(tar = 0 ; tar < P->nFiles ; ++tar){
       char color[12];
-      Rect(Plot, Paint->width, Paint->width, Paint->cx, Paint->cy, HeatMapColor(P->matrix[ref][tar], color));
+      Rect(Plot, Paint->width, Paint->width, Paint->cx, Paint->cy, 
+      HeatMapColor(BoundDouble(0.0, P->matrix[ref][tar], 1.0), color));
       Paint->cx += Paint->width + DEFAULT_SPACE;
       }
     // TEXT HAS 16 PX -> CALCULATE AVERAGE POSITION
