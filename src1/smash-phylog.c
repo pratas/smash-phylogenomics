@@ -50,12 +50,12 @@ void PaintMatrix(void){
     Rect(Plot, Paint->width, 1, DEFAULT_CX - (DEFAULT_WIDTH*2), Paint->cy + ref, 
     HeatMapColor(((double) ref / size), color));
     }
-  Text90d(Plot, -DEFAULT_CX - ((size/2)+25), DEFAULT_CX-(DEFAULT_WIDTH*2 + 2), "SCALE");
+  Text90d(Plot, -DEFAULT_CX - ((size/2)+46), DEFAULT_CX-(DEFAULT_WIDTH*2 + 2), "SIMILARITY");
   Text   (Plot, DEFAULT_CX-(DEFAULT_WIDTH*2 + 14), Paint->cy+13, "1");
   Text   (Plot, DEFAULT_CX-(DEFAULT_WIDTH*2 + 14), Paint->cy+size, "0");
 
   for(ref = 0 ; ref < P->nFiles ; ++ref){
-    for(tar = 0 ; tar < P->nFiles ; ++tar){
+    for(tar = P->nFiles ; tar-- ; ){ // INVERT LOOP TO INCREASE SPEED OF LEARNING
       char color[12];
       Rect(Plot, Paint->width, Paint->width, Paint->cx, Paint->cy, 
       HeatMapColor(BoundDouble(0.0, P->matrix[ref][tar], 1.0), color));
@@ -63,7 +63,7 @@ void PaintMatrix(void){
       }
     // TEXT HAS 16 PX -> CALCULATE AVERAGE POSITION
     Text   (Plot, Paint->cx + 4, (Paint->cy+Paint->width/2)+6, P->files[ref]);
-    Text90d(Plot, /*Paint->cx*/4-DEFAULT_CX, (Paint->cy+Paint->width/2)+10, P->files[ref]);
+    Text90d(Plot, /*Paint->cx*/4-DEFAULT_CX, (Paint->cy+Paint->width/2)+10, P->files[P->nFiles-1-ref]);
     Paint->cx =  DEFAULT_CX;
     Paint->cy += Paint->width + DEFAULT_SPACE;
     }
