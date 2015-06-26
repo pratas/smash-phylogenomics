@@ -193,7 +193,7 @@ void CompressTarget(Threads T){
   RemoveParser(PA);
   fclose(Reader);
 
-  P->matrix[P->ref][T.id] = nBase == 0 ? 101 : bits / nBase; // 101 -> nan
+  P->matrix[P->ref][T.id] = nBase == 0 ? 101 : bits / 2 / nBase; // 101 -> nan
   }
 
 
