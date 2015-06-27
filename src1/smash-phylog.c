@@ -36,7 +36,9 @@ void PaintMatrix(void){
   Painter *Paint;
   uint32_t ref, tar;
 
-  Paint = CreatePainter(/* HEIGHT */ DEFAULT_CX * 2 + ((DEFAULT_WIDTH + DEFAULT_SPACE) * P->nFiles) + 5, backColor);
+  Paint = CreatePainter(DEFAULT_CX * 2 + ((DEFAULT_WIDTH + DEFAULT_SPACE) * 
+  P->nFiles) + 5, backColor);
+
   PrintHead(Plot, (2 * DEFAULT_CX) + (((Paint->width + DEFAULT_SPACE) *
   P->nFiles) - DEFAULT_SPACE), Paint->size + EXTRA);
 
