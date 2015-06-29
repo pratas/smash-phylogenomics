@@ -3,8 +3,8 @@
 
 #include "defs.h"
 
-#define DEFAULT_CX             250.0
-#define DEFAULT_CY             250.0
+#define DEFAULT_CX             350.0
+#define DEFAULT_CY             350.0
 #define DEFAULT_TX             50.0                        // X COORD FOR TEXT
 #define DEFAULT_TY             82.0                        // Y COORD FOR TEXT
 #define DEFAULT_WIDTH          35.0                        // SQUARE THICKNESS
