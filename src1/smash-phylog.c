@@ -32,18 +32,17 @@ CModel **Models;  // MEMORY SHARED BY THREADING
 
 void PaintMatrix(void){
   FILE *Plot = Fopen("plot.svg", "w");
-  char backColor[] = "#ffffff";
   Painter *Paint;
   uint32_t ref, tar;
 
   Paint = CreatePainter(DEFAULT_CX * 2 + ((DEFAULT_WIDTH + DEFAULT_SPACE) * 
-  P->nFiles) + 5, backColor);
+  P->nFiles) + 5);
 
   PrintHead(Plot, (2 * DEFAULT_CX) + (((Paint->width + DEFAULT_SPACE) *
   P->nFiles) - DEFAULT_SPACE), Paint->size + EXTRA);
 
   Rect(Plot, (2 * DEFAULT_CX) + (((Paint->width + DEFAULT_SPACE) *
-  P->nFiles) - DEFAULT_SPACE), Paint->size + EXTRA, 0, 0, backColor);
+  P->nFiles) - DEFAULT_SPACE), Paint->size + EXTRA, 0, 0, "#ffffff");
 
   // PRINT HEATMAP SCALE
   uint32_t size = (Paint->width + DEFAULT_SPACE) * P->nFiles - DEFAULT_SPACE;
@@ -74,6 +73,7 @@ void PaintMatrix(void){
     }
   
   PrintFinal(Plot);
+  RemovePainter(Paint);
   }
 
 

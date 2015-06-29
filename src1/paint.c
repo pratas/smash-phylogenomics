@@ -129,19 +129,24 @@ char *HeatMapColor(double lambda, char *color){
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-Painter *CreatePainter(double size, char *color)
+Painter *CreatePainter(double size)
   {
-  Painter *P    = (Painter *) Malloc(sizeof(Painter));  
+  Painter *Pa   = (Painter *) Malloc(sizeof(Painter));  
 
-  P->backColor  = color;
-  P->size       = size; 
-  P->cx         = DEFAULT_CX;
-  P->cy         = DEFAULT_CY;
-  P->tx         = DEFAULT_TX;
-  P->ty         = DEFAULT_TY;
-  P->width      = DEFAULT_WIDTH; 
+  Pa->size       = size; 
+  Pa->cx         = DEFAULT_CX;
+  Pa->cy         = DEFAULT_CY;
+  Pa->tx         = DEFAULT_TX;
+  Pa->ty         = DEFAULT_TY;
+  Pa->width      = DEFAULT_WIDTH; 
 
-  return P;
+  return Pa;
+  }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+void RemovePainter(Painter *Pa){
+  Free(Pa);
   }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

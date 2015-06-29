@@ -18,7 +18,6 @@
 
 typedef struct
   {
-  char    *backColor;
   double  width;
   double  cx; 
   double  cy;
@@ -47,7 +46,8 @@ HsvColor;
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 char      *HeatMapColor  (double, char *);
-Painter   *CreatePainter (double, char *);
+Painter   *CreatePainter (double);
+void      RemovePainter  (Painter *);
 RgbColor  HsvToRgb       (HsvColor);
 HsvColor  RgbToHsv       (RgbColor);
 char      *GetRgbColor   (uint8_t);
