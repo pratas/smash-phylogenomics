@@ -104,7 +104,7 @@ char *GetRgbColor(uint8_t hue)
 char *HeatMapColor(double lambda, char *color){
 
   // CHANGE THE BEHAVIOUR [SENSITIVITY: NEAR LOW SIMILARITY
-  lambda = (1 + lambda*lambda*lambda + tanh(8*(lambda-1))) / 2; 
+//  lambda = (1 + lambda*lambda*lambda + tanh(8*(lambda-1))) / 2; 
 
   // CHANGE THIS FOR OTHER PALLET COLOR
   double start     = 0.35;
