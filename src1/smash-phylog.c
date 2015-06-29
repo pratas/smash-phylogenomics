@@ -52,7 +52,8 @@ void PaintMatrix(void){
     Rect(Plot, Paint->width, 1, DEFAULT_CX - (DEFAULT_WIDTH*2), Paint->cy + ref, 
     HeatMapColor(((double) ref / size), color));
     }
-  Text90d(Plot, -DEFAULT_CX - ((size/2)+46), DEFAULT_CX-(DEFAULT_WIDTH*2 + 2), "SIMILARITY");
+  if(P->nFiles > 4)
+    Text90d(Plot, -DEFAULT_CX - ((size/2)+46), DEFAULT_CX-(DEFAULT_WIDTH*2 + 2), "SIMILARITY");
   Text   (Plot, DEFAULT_CX-(DEFAULT_WIDTH*2 + 14), Paint->cy+13, "1");
   Text   (Plot, DEFAULT_CX-(DEFAULT_WIDTH*2 + 14), Paint->cy+size, "0");
 
@@ -347,11 +348,8 @@ int32_t main(int argc, char *argv[]){
       col = atoi(xargv[n+1]);
 
   P->col        = ArgsNum    (col,   p, argc, "-c", 1, 200);
-  P->windowSize = ArgsNum    (DEFAULT_FILTERSIZE, p, argc, "-f", 1, 1000000);
-  P->blockSize  = ArgsNum    (DEFAULT_MINBLOCK,   p, argc, "-b", 1, 9999999);
   P->gamma      = ArgsDouble (gamma, p, argc, "-g");
   P->gamma      = ((int)(P->gamma * 65536)) / 65536.0;
-  P->threshold  = ArgsDouble (threshold, p, argc, "-t");
   P->nFiles     = ReadFNames (P, argv[argc-1]);
   P->index      = ArgsNum    (index, p, argc, "-i", 1, P->nFiles);
 
