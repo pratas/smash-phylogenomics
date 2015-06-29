@@ -177,6 +177,7 @@ void CompressTarget(Threads T){
   RemoveFPModel(PT);
   for(n = 0 ; n < P->nModels ; ++n)
     FreeShadow(Shadow[n]);
+  Free(Shadow);
   Free(readBuf);
   RemoveCBuffer(symBuf);
   RemoveParser(PA);
@@ -418,16 +419,9 @@ int32_t main(int argc, char *argv[]){
 
   RemoveClock(Time);
 
-/*
-  Free(P->size);
-  for(k = 0 ; k < P->nFiles ; ++k){
-    Free(P->matrix[k]);
-    Free(P->files[k]);
-    }
-  Free(P->files);
-  Free(P->matrix);
-  Free(P);  
-*/
+  for(ref = 0 ; ref < P->nFiles ; ++ref)
+    Free(T[ref].model);
+  Free(T);
 
   return EXIT_SUCCESS;
   }
