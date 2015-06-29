@@ -79,8 +79,6 @@ void PaintMatrix(void){
 
 void CompressTarget(Threads T){
   FILE        *Reader  = Fopen(P->files[T.id], "r");
-  char        *name    = concatenate(P->files[P->ref], 
-              concatenate(P->files[T.id], ".sp"));
   double      *cModelWeight, cModelTotalWeight = 0, bits = 0, instance = 0;
   uint64_t    nBase = 0;
   uint32_t    n, k, idxPos, totModels, cModel;
@@ -88,8 +86,8 @@ void CompressTarget(Threads T){
   CBUF        *symBuf = CreateCBuffer(BUFFER_SIZE, BGUARD);
   uint8_t     *readBuf = (uint8_t *) Calloc(BUFFER_SIZE, sizeof(uint8_t));
   uint8_t     sym, *pos;
-  PModel      **pModel, *PMSelf, *MX;
-  CModel      **Shadow, *CMSelf;
+  PModel      **pModel, *MX;
+  CModel      **Shadow;
   FloatPModel *PT;
 
   totModels = P->nModels; // EXTRA MODELS DERIVED FROM EDITS
@@ -100,12 +98,9 @@ void CompressTarget(Threads T){
   Shadow = (CModel **) Calloc(P->nModels, sizeof(CModel *));
   for(n = 0 ; n < P->nModels ; ++n)
     Shadow[n] = CreateShadowModel(Models[n]); 
-  CMSelf        = CreateCModel(10, 1, 1, 1, 1, 0, 0);
-
   pModel        = (PModel  **) Calloc(totModels, sizeof(PModel *));
   for(n = 0 ; n < totModels ; ++n)
     pModel[n]   = CreatePModel(ALPHABET_SIZE);
-  PMSelf        = CreatePModel(ALPHABET_SIZE);
   MX            = CreatePModel(ALPHABET_SIZE);
   PT            = CreateFloatPModel(ALPHABET_SIZE);
   cModelWeight  = (double   *) Calloc(totModels, sizeof(double));
@@ -143,22 +138,12 @@ void CompressTarget(Threads T){
         ++n;
         }
 
-      GetPModelIdx(pos, CMSelf);
-      ComputePModel(CMSelf, PMSelf, CMSelf->pModelIdx, CMSelf->alphaDen);
-
-      if(PModelSymbolLog(PMSelf, sym) > P->threshold) {
-        MX->sum  = (MX->freqs[0] = 1 + (unsigned) (PT->freqs[0] * MX_PMODEL));
-        MX->sum += (MX->freqs[1] = 1 + (unsigned) (PT->freqs[1] * MX_PMODEL));
-        MX->sum += (MX->freqs[2] = 1 + (unsigned) (PT->freqs[2] * MX_PMODEL));
-        MX->sum += (MX->freqs[3] = 1 + (unsigned) (PT->freqs[3] * MX_PMODEL));
-        bits += (instance = PModelSymbolLog(MX, sym));
-        nBase++;
-        } 
-
-      UpdateCModelCounter(CMSelf, sym, CMSelf->pModelIdx);
-      if(CMSelf->ir == 1)
-        UpdateCModelCounter(CMSelf, GetPModelIdxIR(pos+1, CMSelf), 
-        CMSelf->pModelIdxIR);
+      MX->sum  = (MX->freqs[0] = 1 + (unsigned) (PT->freqs[0] * MX_PMODEL));
+      MX->sum += (MX->freqs[1] = 1 + (unsigned) (PT->freqs[1] * MX_PMODEL));
+      MX->sum += (MX->freqs[2] = 1 + (unsigned) (PT->freqs[2] * MX_PMODEL));
+      MX->sum += (MX->freqs[3] = 1 + (unsigned) (PT->freqs[3] * MX_PMODEL));
+      bits += (instance = PModelSymbolLog(MX, sym));
+      nBase++;
 
       cModelTotalWeight = 0;
       for(n = 0 ; n < totModels ; ++n){
@@ -181,17 +166,14 @@ void CompressTarget(Threads T){
       UpdateCBuffer(symBuf);
       }
 
-  Free(name);
   Free(cModelWeight);
   for(n = 0 ; n < totModels ; ++n)
     RemovePModel(pModel[n]);
   Free(pModel);
   RemovePModel(MX);
-  RemovePModel(PMSelf);
   RemoveFPModel(PT);
   for(n = 0 ; n < P->nModels ; ++n)
     FreeShadow(Shadow[n]);
-  FreeCModel(CMSelf);
   Free(readBuf);
   RemoveCBuffer(symBuf);
   RemoveParser(PA);
