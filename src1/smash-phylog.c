@@ -210,7 +210,7 @@ void LoadReference(Threads T){
   fclose(Reader);
   struct   stat s;
   size_t   size, k;
-  int      fd = open(P->files[T.id], O_RDONLY);
+  long     fd = open(P->files[T.id], O_RDONLY);
 
   fstat (fd, & s);
   size = s.st_size;
